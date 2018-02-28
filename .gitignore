@@ -1,3 +1,7 @@
+config.js
+public/
+package-lock.json
+
 # Logs
 logs
 *.log

@@ -1,0 +1,32 @@
+{
+  "name": "pske-printer",
+  "version": "1.0.0",
+  "description": "Print arbitrary submissions",
+  "main": "print.js",
+  "scripts": {
+    "test": "node print.js"
+  },
+  "author": "apanagio",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "express": "^4.15.3",
+    "json2xml": "^0.1.3",
+    "minimist": "^1.2.0",
+    "moment": "^2.18.1",
+    "mssql": "^4.0.4",
+    "pdfmake": "^0.1.31",
+    "ramda": "^0.24.1",
+    "require-dir": "^0.3.2",
+    "xml-to-json-promise": "0.0.3"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mou-gr/print.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mou-gr/print/issues"
+  },
+  "homepage": "https://github.com/mou-gr/print#readme"
+}
