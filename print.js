@@ -52,8 +52,7 @@ const getJsonMetaData = async function (wizard, pool) {
 	const jsonData = tables.length > 0 ? await db.getAllTables(tables, pool) : {recordset:[]};
 	return jsonData.recordset;
 }
-//activity = {callId, callPhaseId, contractId, activityId}
-//extra = {wizard, metaData, dataSet, lookUps, jsonLookUps, countries}
+
 const print = async function (activity, extra, pool) {
 	const otherwise = function (el) {
 		return JSON.stringify(el, null, 2);
@@ -82,6 +81,7 @@ const createDoc = async function (contractActivity, wizardFile, jsonLookUpFolder
 	const pool = await db.getConnection();
 	var activity = await db.getCallCallPhase(contractActivity, pool);
 	activity.contractId = await db.getContractId(contractActivity, pool);
+
 	activity.activityId = contractActivity;
 	const extra = await Promise.props({
 		wizard: wiz.parse(wizardFile),
@@ -90,6 +90,7 @@ const createDoc = async function (contractActivity, wizardFile, jsonLookUpFolder
 		countries: db.getCountries(pool)
 	})
 
+	extra.callData = await db.getCallData(activity.contractId, pool);
 	extra.metaData = await getJsonMetaData(extra.wizard, pool);
 
 	const xmlData = await db.getXmlData(contractActivity, pool);

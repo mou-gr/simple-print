@@ -94,7 +94,13 @@ const getContractId = async function (activityId, pool) {
     const res = await query(str, pool);
     return res.recordset[0].CA_ContractID;
 }
-
+const getCallData = async function (contractId, pool) {
+    const str = `select JsonData from
+        Invitation i join Invitation_Contract ic on i.ID = ic.INV_InvitationID
+        where ic.CO_ContractID = ${contractId}`;
+    const res = await query(str, pool);
+    return JSON.parse(JSON.parse(res.recordset[0].JsonData).compiled);
+}
 const getContractItemDetail = async function (contractId, datafilter, pool) {
     const str = `SELECT cid.*, cac.CAD_Description, ca.CallActionID , ca.CA_CallActionCategoryID, ca.CA_Description, cee.CEE_Code, cee.CEE_Description, ce.CE_CallExpenseEnumID
 FROM ContractItem ci
@@ -135,4 +141,5 @@ module.exports = {getConnection, query, getTableData, getTableMetaData, getAllTa
     , getXmlData, getLookUps, getCountries, getFilteredDataSet, closeConnection
     , getCallCallPhase, getContractId, getContractItemDetail
     , getCallExpenseDescription, getCallAction, getBudgetSummary
+    , getCallData
 }

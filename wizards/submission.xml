@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wizard-defs>
+  <wizard-flow id="GDE01_SubmissionWiz" header-url="Controls/Wizards/WizardActivitySummaryHeader.ascx" icon-url="icons/apply.gif" header-caption="Ενίσχυση Επιχειρηματικότητας">
+    <step id="step11" url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx" description="ΒΑΣΙΚΑ ΣΤΟΙΧΕΙΑ ΔΙΚΑΙΟΥΧΟΥ" header-caption="ΒΑΣΙΚΑ ΣΤΟΙΧΕΙΑ ΔΙΚΑΙΟΥΧΟΥ" autonomous="true" help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param id="tab_1_1" description="1.1 Γενικά Στοιχεία Δικαιούχου" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CmhWorkingData.ModificationContractor" auto-set="true" />
+            <param id="Qualifier" value="Multi" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_1_2" description="1.2 Στοιχεία Εκπροσώπων" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CmhWorkingData.ModificationContractContact" auto-set="true" />
+            <param id="Qualifier" value="Type302" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_1_3" description="1.3 Στοιχεία Εταίρων/Μετόχων" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CmhWorkingData.ContractorShareholders" auto-set="true" />
+            <param id="Qualifier" value="Multi" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_1_5" description="1.4 Κ.Α.Δ. Δικαιούχου/Επένδυσης" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.RelatedKAD2008Info" auto-set="true" />
+            <param id="Qualifier" value="Multi" auto-set="true" />
+          </parameters>
+        </user-control-param>
+              <user-control-param id="tab_1_6" description="1.5 Επιπλέον Πληροφορίες για Δικαιούχο" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category16" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_1_7" description="1.6 Συγκεντρωτικά Στοιχεία Μεγέθους Επιχείρησης" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category17" auto-set="true" />
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+    <step id="step2" url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx" description="ΣΤΟΙΧΕΙΑ ΕΤΑΙΡΩΝ/ ΜΕΤΟΧΩΝ/ ΣΥΝΔΕΔΕΜΕΝΩΝ" header-caption="ΣΤΟΙΧΕΙΑ ΕΤΑΙΡΩΝ/ ΜΕΤΟΧΩΝ/ ΣΥΝΔΕΔΕΜΕΝΩΝ" autonomous="true" help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param id="tab_2_1" description="2.1 Στοιχεία Επιχειρήσεων στις οποίες συμμετέχουν οι Εταίροι/Μέτοχοι (συμπεριλαμβανομένων των offshore)" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.ContractorCompaniesShareholders" auto-set="true" />
+            <param id="Qualifier" value="Multi" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_2_2" description="2.2 Συνδεδεμένες/Συνεργαζόμενες επιχειρήσεις" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.LinkedEnterprises" auto-set="true" />
+            <param id="Qualifier" value="Multi" auto-set="true" />
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+    <step id="step3" url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx" description="ΣΤΟΙΧΕΙΑ ΣΩΡΕΥΣΗΣ ΚΡΑΤΙΚΩΝ ΕΝΙΣΧΥΣΕΩΝ (DE MINIMIS)" header-caption="ΣΤΟΙΧΕΙΑ ΣΩΡΕΥΣΗΣ ΚΡΑΤΙΚΩΝ ΕΝΙΣΧΥΣΕΩΝ (DE MINIMIS)" autonomous="true" help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param id="tab_3_1" description="3.1 Στοιχεία Σώρευσης Κρατικών Ενισχύσεων (De Minimis) της Επιχείρησης" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="ContractModificationDataSet.DeMinimisProject" auto-set="true" />
+            <param id="Qualifier" value="Type1" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_3_2" description="3.2 Στοιχεία Σώρευσης Κρατικών Ενισχύσεων Μη Ήσσονος Σημασίας της Επιχείρησης" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="ContractModificationDataSet.DeMinimisProject" auto-set="true" />
+            <param id="Qualifier" value="Type2" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_3_3" description="3.3 Ενισχύσεις De Minimis σε Συνδεδεμένες και Συνεργαζόμενες" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="ContractModificationDataSet.DeMinimisProject" auto-set="true" />
+            <param id="Qualifier" value="Type3" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_3_4" description="3.4 Μη Ενισχύσεις De Minimis σε Συνδεδεμένες και Συνεργαζόμενες" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="ContractModificationDataSet.DeMinimisProject" auto-set="true" />
+            <param id="Qualifier" value="Type4" auto-set="true" />
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+    <step id="step4" url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx" description="ΒΑΣΙΚΑ ΣΤΟΙΧΕΙΑ ΤΑΥΤΟΤΗΤΑΣ ΕΠΕΝΔΥΣΗΣ" header-caption="ΒΑΣΙΚΑ ΣΤΟΙΧΕΙΑ ΤΑΥΤΟΤΗΤΑΣ ΕΠΕΝΔΥΣΗΣ" autonomous="true" help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param id="tab_4_1" description="4.1 Στοιχεία Επένδυσης" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category41" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_4_2" description="4.2 Τόπος Υλοποίησης" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CmhWorkingData.ModificationContractContact" auto-set="true" />
+            <param id="Qualifier" value="Type601" auto-set="true" />
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+    <step id="step5" url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx" description="ΤΗΡΗΣΗ ΕΘΝΙΚΩΝ ΚΑΙ ΕΝΩΣΙΑΚΩΝ ΚΑΝΟΝΩΝ" header-caption="ΤΗΡΗΣΗ ΕΘΝΙΚΩΝ ΚΑΙ ΕΝΩΣΙΑΚΩΝ ΚΑΝΟΝΩΝ" autonomous="true" help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param id="tab_5_1" description="5.1 Τήρηση Εθνικών και Ενωσιακών Κανόνων" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category3" auto-set="true" />
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+    <step id="step6" url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx" description="ΦΥΣΙΚΟ ΑΝΤΙΚΕΙΜΕΝΟ" header-caption="ΠΕΡΙΓΡΑΦΗ ΕΠΙΧΕΙΡΗΜΑΤΙΚΟΥ ΣΧΕΔΙΟΥ" autonomous="true" help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param id="tab_6_1" description="6.1 Φυσικό Αντικείμενο" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category4" auto-set="true" />
+          </parameters>
+        </user-control-param>
+            <user-control-param id="tab_6_2" description="6.2 Πίνακας Αδειών" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+              <parameters>
+                <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+                <param id="Qualifier" value="Category63" auto-set="true" />
+              </parameters>
+            </user-control-param>
+        <user-control-param id="tab_6_3" description="6.3 Επιπλέον Στοιχεία" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category64" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_6_4" description="6.4 Παραδοτέα" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category66" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_6_5" description="6.5 Παράρτημα I" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category67" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_6_6" description="6.6 Παράρτημα II" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category68" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab_6_7" description="6.7 Παράρτημα III" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category69" auto-set="true" />
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+    <step id="step7" url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx" description="ΟΙΚΟΝΟΜΙΚΟ ΑΝΤΙΚΕΙΜΕΝΟ ΕΡΓΟΥ" header-caption="ΟΙΚΟΝΟΜΙΚΟ ΑΝΤΙΚΕΙΜΕΝΟ ΕΡΓΟΥ" autonomous="true" help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param id="tab7_1" description="7.1 Πίνακας Δαπανών" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+                <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+                <param id="Qualifier" value="Category81" auto-set="true" />
+              </parameters>
+        </user-control-param>
+        <user-control-param id="tab_7_2" description="7.2 Στοιχεία Ιδιωτικής Συμμετοχής" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category65" auto-set="true" />
+          </parameters>
+        </user-control-param>
+        <user-control-param id="tab7_3" description="7.3 Χρηματοδοτικό Σχήμα" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+                <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+                <param id="Qualifier" value="Category82" auto-set="true" />
+              </parameters>
+        </user-control-param>
+        <user-control-param id="tab7_4" description="7.4 Δείκτες" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category74" auto-set="true" />
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+        <step id="step8" url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx" description="ΑΠΟΔΟΧΗ ΌΡΩΝ ΚΑΙ ΠΡΟΫΠΟΘΕΣΕΩΝ" header-caption="ΑΠΟΔΟΧΗ ΌΡΩΝ ΚΑΙ ΠΡΟΫΠΟΘΕΣΕΩΝ" autonomous="true" help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param id="tab_8_1" description="8.1 Αποδοχή Όρων και Προϋποθέσεων" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+            <param id="Qualifier" value="Category91" auto-set="true" />
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+    <step id="stepPreLast" url="../../Modules/Common/Controls/Wizards/CompositeControls/FlowLayoutCompositeControl.ascx" description="ΣΥΝΝΗΜΕΝΑ ΑΡΧΕΙΑ" header-caption="ΣΥΝΝΗΜΕΝΑ ΑΡΧΕΙΑ" autonomous="true" help-url="">
+        <parameters>
+          <user-control-param id="tab_doc_header" description="Ενημερωτικό συνημμένων" url="../../SAMIS/Common/Controls/SamisDataTable.ascx" auto-set="false">
+            <parameters>
+              <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true" />
+              <param id="Qualifier" value="CategoryPreLast" auto-set="true" />
+            </parameters>
+          </user-control-param>
+
+          <user-control-param id="tab_PreLast" description="Επισυναπτόμενα Έγγραφα" url="../../SAMIS/Common/Controls/AccompanyingDocs.ascx" auto-set="false">
+          <parameters>
+            <param id="DocType" value="1" />
+            <param id="CallPhaseID" value="1985" />
+            <param id="MaxFileSize" value="10" />
+            <param id ="FileExtensions" value="doc,docx,xls,xlsx,pdf,jpg,gif,zip,rar" />
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+    <!-- ΟΡΙΣΤΙΚΟΠΟΙΗΣΗ ΚΑΙ ΥΠΟΒΟΛΗ ΤΗΣ ΕΠΕΝΔΥΤΙΚΗΣ ΠΡΟΤΑΣΗΣ -->
+    <step id="stepLast" url="Controls/Wizards/WizardContractActivitySummary.ascx" description="ΟΡΙΣΤΙΚΟΠΟΙΗΣΗ ΚΑΙ ΥΠΟΒΟΛΗ ΤΗΣ ΕΠΕΝΔΥΤΙΚΗΣ ΠΡΟΤΑΣΗΣ" header-caption="ΟΡΙΣΤΙΚΟΠΟΙΗΣΗ ΚΑΙ ΥΠΟΒΟΛΗ ΤΗΣ ΕΠΕΝΔΥΤΙΚΗΣ ΠΡΟΤΑΣΗΣ" autonomous="true"></step>
+  </wizard-flow>
+</wizard-defs>

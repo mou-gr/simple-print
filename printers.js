@@ -8,6 +8,41 @@ const Promise = require("bluebird");
 const currency = s => typeof s === 'string' ? s.replace('.', ',') : s.toFixed(2).replace('.', ',');
 const withStyle = (s, t) => ({style: s, text: t})
 
+const mergeColumns = function mergeColumns(weak, strong) {
+    /** merges two sets of columns, priority to the latter*/
+    const weakOnly = R.differenceWith((a, b) => a.name === b.name, weak, strong)
+    const strongOnly = R.differenceWith((a, b) => a.name === b.name, strong, weak)
+    const common = R.pipe(
+        R.filter((a) => a[0].name === a[1].name),
+        R.map(a => R.merge(a[0], a[1]))
+    )(R.xprod(weak, strong)) // take the cross product of all columns, keep the tuples with the same name, merge them
+
+    return [...weakOnly, ...strongOnly, ...common] //append everything
+}
+const merge = function merge (weak, strong) {
+    /** merges two sets of metadata. Priority to the latter */
+    if (!strong) { return weak }
+
+    // if hiddenColumns hide all weakColumns
+    // exclude from hiding the columns that are in showColumns
+    // exclude from hiding the columns that are explicitly declared
+    // default to [] when columns undefined
+    const hiddenColumns = strong.hiddenColumns === "*" ? R.pluck('name', weak.columns || []) : strong.hiddenColumns || []
+    const showColumns = strong.showColumns || []
+    const declaredColumns = R.pluck('name', strong.columns || [])
+    const finalHiddenColumns = R.difference(hiddenColumns, [...showColumns, ...declaredColumns])
+
+    const hidden = R.map(a => ({'name': a, 'view': '', 'edit': ''}), finalHiddenColumns)
+
+    const mergedHidden = mergeColumns(weak.columns || [], hidden)
+    const columns = mergeColumns(mergedHidden, strong.columns || [])
+
+    var merged = R.merge(weak, strong)
+    merged.columns = columns
+
+    return merged
+}
+
 const getMetaData = function (tableName, qualifier, callId, callPhaseId, metaDataTables) {
 
     const dataKey = (tableName, qualifier, callId, callPhaseId) => tableName
@@ -29,19 +64,6 @@ const getMetaData = function (tableName, qualifier, callId, callPhaseId, metaDat
             return {};
         }
     }
-    const mergeColumns = function (objArr) {
-        const cols = R.pipe(
-            R.filter(el => el.columns)
-            , R.map(function (c) {
-                var merged = {};
-                c.columns.forEach(function (col) {
-                    (merged[col.name] = col);
-                });
-                return merged;
-            }))(objArr);
-        const colKeys = Object.keys(Object.assign({}, ...cols));
-        return colKeys.map(el => Object.assign({}, ...R.pluck(el, cols)));
-    }
 
     const records = [];
     records.push(R.filter(el => el.DataKey == dataKey(tableName), metaDataTables)[0]);
@@ -50,10 +72,7 @@ const getMetaData = function (tableName, qualifier, callId, callPhaseId, metaDat
     records.push(R.filter(el => el.DataKey == dataKey(tableName, qualifier, callId, callPhaseId), metaDataTables)[0]);
 
     const recordJson = records.map(parseMetaData);
-    var finalObj = Object.assign({}, recordJson[0], recordJson[1], recordJson[2], recordJson[3]);
-    var colArr = [];
-    R.map(el => {colArr.push(el)}, mergeColumns(recordJson));
-    finalObj.columns = colArr;
+    const finalObj = R.reduce(merge, {}, recordJson)
     return finalObj;
 }
 
@@ -120,6 +139,7 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
             , date2: date
             , date: date
         }
+
         if (typeof readers[el.etype] === 'function') {
             return readers[el.etype](el, dataSet)
         } else {
@@ -285,50 +305,50 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
 
             return doc;
         }
-        const horizontal = function (metaData, dataSet) {
-            var i, doc = [];
-            var cols = R.pipe(
-                R.filter(el => el.view + el.edit !== '')
-                , R.filter(el => el.virtual != 1)
-                , R.sortBy(el => 1 * el.vord)
-            )(metaData.columns);
-            var content = []
-            for (i = 0; i < cols.length; i++) {
-                const el = cols[i];
-                if (el.header && el.header[1]) {
-                    break;
-                }
-                content.push([getLabel(el.label), getData(el, dataSet)]);
-            }
-            const header = cols[i].header;
-            var subContent = [
-                {
-                    colSpan: 2,
-                    table: {
-                        body: [
-                            header.map(el => withStyle('headerRow', el.lab))
-                        ]
-                    }
-                }
-            ];
-            for (i; i < cols.length; i+= header.length - 1) {
-                const el = [withStyle('label', cols[i].label)].concat(R.range(0, header.length - 1).map(r => getData(cols[i + r], dataSet) ))
-                subContent[0].table.body.push(el);
-            }
-            content.push(subContent);
-            var doc = [
-                {
-                  layout: 'noBorders',
-                  table: {
-                    widths: [ 200, 300 ],
-                    // dontBreakRows: true,
-                    body: content
-                  }
-              },
-              "  "
-           ]
-            return doc;
-        }
+        // const horizontal = function (metaData, dataSet) {
+        //     var i, doc = [];
+        //     var cols = R.pipe(
+        //         R.filter(el => el.view + el.edit !== '')
+        //         , R.filter(el => el.virtual != 1)
+        //         , R.sortBy(el => 1 * el.vord)
+        //     )(metaData.columns);
+        //     var content = []
+        //     for (i = 0; i < cols.length; i++) {
+        //         const el = cols[i];
+        //         if (el.header && el.header[1]) {
+        //             break;
+        //         }
+        //         content.push([getLabel(el.label), getData(el, dataSet)]);
+        //     }
+        //     const header = cols[i].header;
+        //     var subContent = [
+        //         {
+        //             colSpan: 2,
+        //             table: {
+        //                 body: [
+        //                     header.map(el => withStyle('headerRow', el.lab))
+        //                 ]
+        //             }
+        //         }
+        //     ];
+        //     for (i; i < cols.length; i+= header.length - 1) {
+        //         const el = [withStyle('label', cols[i].label)].concat(R.range(0, header.length - 1).map(r => getData(cols[i + r], dataSet) ))
+        //         subContent[0].table.body.push(el);
+        //     }
+        //     content.push(subContent);
+        //     var doc = [
+        //         {
+        //           layout: 'noBorders',
+        //           table: {
+        //             widths: [ 200, 300 ],
+        //             // dontBreakRows: true,
+        //             body: content
+        //           }
+        //       },
+        //       "  "
+        //    ]
+        //     return doc;
+        // }
 
         if (metaData.customise && metaData.customise === 'ContractorBudgetSummary') {
             return renderBudgetSummaryFromWp(metaData, dataSet, extra);
@@ -339,14 +359,21 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
         if (metaData.customise && metaData.customise === 'ContractItemDetail_TDE') {
             return renderExpenses(metaData, dataSet);
         }
-        if (metaData.columns.filter(el => el.header && el.header[1] ).length > 0) {
-            return horizontal(metaData, dataSet)
-        } else {
+        // if (metaData.columns.filter(el => el.header && el.header[1] ).length > 0) {
+        //     return horizontal(metaData, dataSet)
+        // } else {
             return vertical(metaData, dataSet);
-        }
+        // }
     }
 
-    const metaData = getMetaData(el.table, el.Qualifier, activity.callId, activity.callPhaseId, extra.metaData)
+    const jsonData = getMetaData(el.table, el.Qualifier, activity.callId, activity.callPhaseId, extra.metaData)
+
+    const callData = extra.callData[jsonData.customise]
+
+    const metaData = merge(jsonData, callData)
+    //check for inactive tab
+    if (R.filter(a => a.view !== '' && a.edit !== '', metaData.columns).length <= 0) { return '' }
+
     const getDataSet = async function (metaData, data, contractId) {
         var dataSet;
         if (metaData.customise === 'ContractItemDetail_TDE') {
