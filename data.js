@@ -99,7 +99,7 @@ const getCallData = async function (contractId, pool) {
         Invitation i join Invitation_Contract ic on i.ID = ic.INV_InvitationID
         where ic.CO_ContractID = ${contractId}`;
     const res = await query(str, pool);
-    return JSON.parse(JSON.parse(res.recordset[0].JsonData).compiled);
+    return JSON.parse(res.recordset[0].JsonData);
 }
 const getContractItemDetail = async function (contractId, datafilter, pool) {
     const str = `SELECT cid.*, cac.CAD_Description, ca.CallActionID , ca.CA_CallActionCategoryID, ca.CA_Description, cee.CEE_Code, cee.CEE_Description, ce.CE_CallExpenseEnumID
