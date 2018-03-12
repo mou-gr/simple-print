@@ -262,7 +262,7 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
             //   layout: 'lightHorizontalLines',
               table: {
                 widths: [ 200, 300 ],
-                // dontBreakRows: true,
+                dontBreakRows: true,
                 body: content
               }
           },
@@ -361,16 +361,64 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
        return doc;
     }
 
-    const renderDataSet = function (metaData, dataSet) {
-        const getLabel = function (label) {
-            return label && label != '' ? label.replace(/&nbsp;/g, ' ') : ' ';
+    const getLabel = label => label && label != '' ? strip(label) : ' '
+
+    const strip = str => str.replace(/(&nbsp;|<ol>|<li>|<\/ol>|<\/li>)/g, ' ')
+
+    const renderHeader = function renderHeader (column) {
+        if (!column.header || column.header == '') { return undefined }
+
+        if (column.header.length === 1) {
+            return [{style:'headerRow', text: strip(column.header[0].lab), colSpan: 2, alignment: 'center'}, ' ']
         }
+
+        return [
+                withStyle('headerRow', R.path(['header', '0', 'lab'], column) || ' '),
+                {
+                    margin: [-5, -3],
+                    table: {
+                        widths: R.map(a => '*', R.tail(column.header)),
+                        body: [ R.map(a => withStyle('headerRow', a.lab))(R.tail(column.header)) ]
+                    }
+                }
+            ]
+    }
+
+    const renderDataSet = function (metaData, dataSet) {
+        const renderColumn = function (el) {
+            return [renderHeader(el), [withStyle('label', getLabel(el.label)), getData(el, dataSet), el.inline]]
+        }
+        const mergeInline = function (columns) {
+            return R.reduce(
+                (acc, value) => {
+                    if (value[2] != '1') { return R.append(R.slice(0, 2, value), acc) }
+                    const lastRow = R.last(acc)
+                    if (typeof(lastRow[1]) === 'string') {
+                        lastRow[1] = {
+                            margin: [-5, -3, -5, -4],
+                            table: {
+                                widths: ['*', '*'],
+                                body: [[ lastRow[1], value[1] ]]
+                            }
+                        }
+                    } else {
+                        lastRow[1].table.body[0].push(value[1])
+                        lastRow[1].table.widths.push('*')
+                    }
+                    return acc
+                }
+                ,[]
+                , columns)
+        }
+
         const vertical = function (metaData, dataSet) {
             var content = R.pipe(
                 R.filter(el => el.view + el.edit !== '')
                 , R.filter(el => el.virtual != 1)
                 , R.sortBy(el => 1 * el.vord)
-                , R.map(el => [withStyle('label', getLabel(el.label)), getData(el, dataSet)])
+                , R.map(renderColumn)
+                , R.unnest
+                , R.filter(R.identity)
             )(metaData.columns);
 
             var doc = [
@@ -379,7 +427,7 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
                   table: {
                     widths: [ 200, 300 ],
                     // dontBreakRows: true,
-                    body: content
+                    body: mergeInline(content)
                   }
               },
               "  "
@@ -387,50 +435,6 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
 
             return doc;
         }
-        // const horizontal = function (metaData, dataSet) {
-        //     var i, doc = [];
-        //     var cols = R.pipe(
-        //         R.filter(el => el.view + el.edit !== '')
-        //         , R.filter(el => el.virtual != 1)
-        //         , R.sortBy(el => 1 * el.vord)
-        //     )(metaData.columns);
-        //     var content = []
-        //     for (i = 0; i < cols.length; i++) {
-        //         const el = cols[i];
-        //         if (el.header && el.header[1]) {
-        //             break;
-        //         }
-        //         content.push([getLabel(el.label), getData(el, dataSet)]);
-        //     }
-        //     const header = cols[i].header;
-        //     var subContent = [
-        //         {
-        //             colSpan: 2,
-        //             table: {
-        //                 body: [
-        //                     header.map(el => withStyle('headerRow', el.lab))
-        //                 ]
-        //             }
-        //         }
-        //     ];
-        //     for (i; i < cols.length; i+= header.length - 1) {
-        //         const el = [withStyle('label', cols[i].label)].concat(R.range(0, header.length - 1).map(r => getData(cols[i + r], dataSet) ))
-        //         subContent[0].table.body.push(el);
-        //     }
-        //     content.push(subContent);
-        //     var doc = [
-        //         {
-        //           layout: 'noBorders',
-        //           table: {
-        //             widths: [ 200, 300 ],
-        //             // dontBreakRows: true,
-        //             body: content
-        //           }
-        //       },
-        //       "  "
-        //    ]
-        //     return doc;
-        // }
 
         if (metaData.customise && metaData.customise === 'ContractorBudgetSummary') {
             return renderBudgetSummaryFromWp(metaData, dataSet, extra);
@@ -441,11 +445,7 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
         if (metaData.customise && metaData.customise === 'ContractItemDetail_TDE') {
             return renderExpenses(metaData, dataSet);
         }
-        // if (metaData.columns.filter(el => el.header && el.header[1] ).length > 0) {
-        //     return horizontal(metaData, dataSet)
-        // } else {
-            return vertical(metaData, dataSet);
-        // }
+        return vertical(metaData, dataSet);
     }
 
     const jsonData = getMetaData(el.table, el.Qualifier, activity.callId, activity.callPhaseId, extra.metaData)
@@ -482,7 +482,7 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
             {style: 'h1', text: metaData.title}
           ]
     if (!dataSet) {
-        doc.push('NO DATASET')
+        doc.push('-------------')
     } else {
         if (metaData.single == 1) {
             doc = doc.concat(renderDataSet(metaData, dataSet[0]))
@@ -497,7 +497,7 @@ const samisDataTable = R.curry(async function (activity, extra, pool, el) {
 
 const styles = {
     h1: {
-        fontSize: 22,
+        fontSize: 18,
         bold: true
     }
     , h2: {
@@ -512,7 +512,7 @@ const styles = {
         , fillColor: '#e2e5e0'
     }
     , headerRow: {
-        fontSize: 12
+        fontSize: 8
         , fillColor: '#b7bab6'
     }
     , sumRow: {
