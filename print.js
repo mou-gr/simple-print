@@ -70,7 +70,7 @@ const frontPage = function (activity, generalInfo) {
     if ( oldFs.existsSync(`logos/${generalInfo.logo}`) ) {
         imageObject = {image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [800, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
     } else {
-        imageObject = {text: 'nologo', pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
+        imageObject = {text: `logos/${generalInfo.logo}`, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
     }
     return [
         {text: `${activity.docType}`, style: 'coverHeader'}
@@ -111,14 +111,14 @@ const print = async function (activity, extra, pool) {
     }
 }
 
-const createDoc = async function (contractActivity, wizardFile, jsonLookUpFolder, output, type) {
+const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, output, type) {
     const pool = await db.getConnection()
     var activity = await db.getCallCallPhase(contractActivity, pool)
 
     activity.activityId = contractActivity
     activity.docType = type
     const extra = await Promise.props({
-        wizard: wiz.parse(wizardFile),
+        wizard: wiz.parse(wizard),
         lookUps: db.getLookUps(pool),
         jsonLookUps: jsonDir(jsonLookUpFolder),
         countries: db.getCountries(pool)

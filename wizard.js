@@ -36,8 +36,8 @@ var controls = {
     'FlowLayoutCompositeControl.ascx': FlowLayoutCompositeControl
 }
 
-const parse = async function (path) {
-    const json = await xml2js.xmlFileToJSON(path)
+const parse = async function (wizard) {
+    const json = await xml2js.xmlDataToJSON(wizard)
     return json['wizard-defs']['wizard-flow'][0].step.map(getStep).filter(el => el != '')
 }
 
