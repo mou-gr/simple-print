@@ -9,8 +9,6 @@ const xml2js = require('xml-to-json-promise')
 const moment = require('moment')
 const oldFs = require('fs')
 
-const ignore = R.always('')
-
 const fonts = {
     Roboto: {
         normal: 'fonts/Roboto-Regular.ttf',
@@ -24,6 +22,9 @@ const PdfPrinter = require('pdfmake/src/printer')
 const printer = new PdfPrinter(fonts)
 const fs = Promise.promisifyAll(oldFs)
 
+//flipping the arguments of Promise.mao so that my eys don't hurt
+const pMap = R.curry((a, b) => Promise.map(b, a))
+
 const jsonDir = async function(dirName) {
     const ret = {}
     const files = await fs.readdirAsync(dirName)
@@ -36,26 +37,6 @@ const jsonDir = async function(dirName) {
 const printDate = date => {
     const val = moment(date)
     return val.isValid() ? val.format(' DD-MM-Y, HH:mm:ss ') : ' Σχέδιο'
-}
-const getJsonMetaData = async function (wizard, pool) {
-    const parseElement = function (el) {
-        return typeof parsers[el.type] === 'function' ? parsers[el.type](el.control) : ignore()
-    }
-    const parsers = {
-        'SamisDataTable.ascx': R.identity
-        , 'WizardCompositeControl.ascx': R.map(parseElement)
-        , 'FlowLayoutCompositeControl.ascx': R.map(parseElement)
-    }
-    const elements = wizard.map(parseElement)
-    const tables = R.pipe(
-        R.flatten,
-        R.uniqBy(el => el.table),
-        R.filter(el => el.table),
-        R.map(el => el.table)
-    )(elements)
-
-    const jsonData = tables.length > 0 ? await db.getAllTables(tables, pool) : {recordset:[]}
-    return jsonData.recordset
 }
 
 const footer = R.curry((activity, page, pages) => ({
@@ -83,69 +64,88 @@ const frontPage = function (activity, generalInfo) {
     ]
 }
 
-const print = async function (activity, extra, pool) {
-    const otherwise = function (el) {
-        return JSON.stringify(el, null, 2)
-    }
-    const parseElement = async function (el) {
-        return typeof parsers[el.type] === 'function' ? await Promise.all(parsers[el.type](el.control)) : otherwise(el)
-    }
-    const parsers = {
-        'SamisDataTable.ascx': printers.samisDataTable(activity, extra, pool)
-        , 'WizardCompositeControl.ascx': R.map(parseElement)
-        , 'FlowLayoutCompositeControl.ascx': R.map(parseElement)
-        , 'Submission_ViewTOC.ascx': ignore
-        , 'Evaluation_ViewTOC.ascx': ignore
-        , 'WizardContractActivitySummary.ascx': ignore
-        , 'InfoPanel.ascx': ignore
-        , 'AccompanyingDocs.ascx': ignore
-        , 'ContractUploadsComposite.ascx': ignore
-        , 'TimePlans.ascx': ignore
-    }
-    const content = await Promise.all(extra.wizard.map(parseElement))
-    return {
-        styles: printers.styles,
-        defaultStyle: printers.styles.default,
-        content: [frontPage(activity, extra.callData.tab1), ...content],
+const print = function print(activity, extra, pool) {
+    const content = Promise.all(R.map(printers.renderDataSet(activity, extra, pool), extra.wizard))
+    const cover = frontPage(activity, extra.callData.tab1)
+
+    return Promise.props ({
+        styles: styles,
+        defaultStyle: styles.default,
+        content: content.then(doc => [cover, ...doc]),
         footer: footer(activity)
-    }
+    })
 }
 
 const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, output, type) {
     const pool = await db.getConnection()
     var activity = await db.getCallCallPhase(contractActivity, pool)
 
-    activity.activityId = contractActivity
-    activity.docType = type
     const extra = await Promise.props({
         wizard: wiz.parse(wizard),
-        lookUps: db.getLookUps(pool),
         jsonLookUps: jsonDir(jsonLookUpFolder),
-        countries: db.getCountries(pool)
+        // lookUps: db.getLookUps(pool),
+        // countries: db.getCountries(pool),
+        callData: db.getCallData(activity.contractId, pool),
+        dataSet: db.getXmlData(contractActivity, pool)
+            .then(pMap(xml2js.xmlDataToJSON))
+            .then(objArray => Object.assign({}, ...objArray))
     })
 
-    extra.callData = await db.getCallData(activity.contractId, pool)
-    extra.metaData = await getJsonMetaData(extra.wizard, pool)
-
-    const xmlData = await db.getXmlData(contractActivity, pool)
-    const dataSet = await Promise.all(xmlData.recordset.map(el => xml2js.xmlDataToJSON(el.CMH_WorkingCopyData) ))
-    extra.dataSet = Object.assign({}, ...dataSet)
-    extra.dataSet.ContractItemDataSet = {}
-    extra.dataSet.ContractItemDataSet.CallExpense = await db.getCallExpenseDescription(activity.callId, pool)
-    extra.dataSet.ContractItemDataSet.CallAction = await db.getCallAction(pool)
-
-    extra.dataSet.ComputedDataSet = {}
-    extra.dataSet.ComputedDataSet.BudgetSummary = await db.getBudgetSummary(activity.contractId, pool)
-    extra.dataSet.ComputedDataSet.BudgetSummaryFromWPs = [extra.dataSet.CommonDataSet.ContractorWorkPackages]
+    activity.activityId = contractActivity
+    activity.docType = type
 
     const docDefinition = await print(activity, extra, pool)
-
     db.closeConnection()
 
-    const pdfDoc = printer.createPdfKitDocument(docDefinition)
-    pdfDoc.pipe(fs.createWriteStream(output))
-    pdfDoc.end()
+    const pdfDoc = await printer.createPdfKitDocument(docDefinition)
+    await pdfDoc.pipe(fs.createWriteStream(output))
+    await pdfDoc.end()
 
     return ('success')
 }
+
+
+const styles = {
+    h1: {
+        fontSize: 16,
+        bold: true
+    }
+    , cover: {
+        fontSize: 16,
+        alignment: 'center',
+        margin: [0, 0, 0, 20]
+    }
+    , coverHeader: {
+        fontSize: 8,
+        italics: true,
+        margin: [0, 0, 0, 50]
+    }
+    , logo: {
+
+    }
+    , h2: {
+        fontSize: 16,
+        bold: true
+    }
+    , default: {
+        fontSize: 9
+    }
+    , label: {
+        fontSize: 9
+        , fillColor: '#e2e5e0'
+    }
+    , headerRow: {
+        fontSize: 8
+        , fillColor: '#b7bab6'
+    }
+    , sumRow: {
+        fontSize: 9
+        , fillColor: '#efd294'
+    }
+    , partialSumRow: {
+        fontSize: 9
+        , fillColor: '#efdeba'
+    }
+}
+
 module.exports = {createDoc}

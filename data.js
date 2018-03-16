@@ -14,14 +14,25 @@ const closeConnection = function () {
     return sql.close()
 }
 
-const query = async function (str, pool) {
-    try {
-        const result = await pool.request().query(str)
-        return result
-    } catch(e) {
-        e.query = str
-        throw(e)
-    }
+const query = function (str, pool) {
+    return pool.request().query(str)
+        .catch(e => {
+            e.query = str
+            throw(e)
+        })
+}
+
+const getJsonData = function (table, qualifier, callId, callPhaseId, pool) {
+    const q = `select Data from JsonData
+            where TableName = '${table}' and Qualifier is null and CallID is null and CallPhaseID is null
+            or TableName = '${table}' and Qualifier = '${qualifier}' and CallID is null and CallPhaseID is null
+            or TableName = '${table}' and Qualifier = '${qualifier}' and CallID = '${callId}' and CallPhaseID is null
+            or TableName = '${table}' and Qualifier = '${qualifier}' and CallID = '${callId}' and CallPhaseID = '${callPhaseId}'
+            order by DataKey`
+    return query(q, pool).then(R.pipe(
+        R.prop('recordset')
+        , R.pluck('Data')
+    ))
 }
 
 const getTableData = function (contractActivityId, dataSet, path, pool) {
@@ -52,6 +63,10 @@ const getAllTables =  function (tables, pool) {
 
 const getXmlData =  function (activityId, pool) {
     return query (`select CMH_WorkingCopyData from ContractModificationHistory where cmh_contractActivityID = ${activityId}`, pool)
+        .then(R.pipe(
+            R.prop('recordset')
+            , R.pluck('CMH_WorkingCopyData')
+        ))
 }
 
 const getLookUps = async function  (pool) {
@@ -139,7 +154,7 @@ const getBudgetSummary = async function (contractId, pool) {
     return [resObject]
 }
 
-module.exports = {getConnection, query, getTableData, getTableMetaData, getAllTables
+module.exports = {getConnection, query, getJsonData, getTableData, getTableMetaData, getAllTables
     , getXmlData, getLookUps, getCountries, getFilteredDataSet, closeConnection
     , getCallCallPhase, getContractId, getContractItemDetail
     , getCallExpenseDescription, getCallAction, getBudgetSummary
