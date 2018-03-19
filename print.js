@@ -76,34 +76,38 @@ const print = function print(activity, extra, pool) {
     })
 }
 
-const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, output, type) {
-    const pool = await db.getConnection()
-    var activity = await db.getCallCallPhase(contractActivity, pool)
+const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, type) {
+    try {
+        const pool = await db.getConnection()
+        var activity = await db.getCallCallPhase(contractActivity, pool)
 
-    const extra = await Promise.props({
-        wizard: wiz.parse(wizard),
-        jsonLookUps: jsonDir(jsonLookUpFolder),
-        // lookUps: db.getLookUps(pool),
-        // countries: db.getCountries(pool),
-        callData: db.getCallData(activity.contractId, pool),
-        dataSet: db.getXmlData(contractActivity, pool)
-            .then(pMap(xml2js.xmlDataToJSON))
-            .then(objArray => Object.assign({}, ...objArray))
-    })
+        const extra = await Promise.props({
+            wizard: wiz.parse(wizard),
+            jsonLookUps: jsonDir(jsonLookUpFolder),
+            // lookUps: db.getLookUps(pool),
+            // countries: db.getCountries(pool),
+            callData: db.getCallData(activity.contractId, pool),
+            dataSet: db.getXmlData(contractActivity, pool)
+                .then(pMap(xml2js.xmlDataToJSON))
+                .then(objArray => Object.assign({}, ...objArray))
+        })
 
-    activity.activityId = contractActivity
-    activity.docType = type
+        activity.activityId = contractActivity
+        activity.docType = type
+        const docDefinition = await print(activity, extra, pool)
+        db.closeConnection()
 
-    const docDefinition = await print(activity, extra, pool)
-    db.closeConnection()
-
-    const pdfDoc = await printer.createPdfKitDocument(docDefinition)
-    await pdfDoc.pipe(fs.createWriteStream(output))
-    await pdfDoc.end()
-
-    return ('success')
+        const pdfDoc = await printer.createPdfKitDocument(docDefinition)
+        // await pdfDoc.pipe(fs.createWriteStream(output))
+        //pdfDoc.pipe(process.stdout)
+        // await pdfDoc.end()
+        pdfDoc.end()
+        return (pdfDoc)
+    } catch (e) {
+        db.closeConnection()
+        throw(e)
+    }
 }
-
 
 const styles = {
     h1: {
