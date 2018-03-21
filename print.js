@@ -85,7 +85,7 @@ const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, ty
             wizard: wiz.parse(wizard),
             jsonLookUps: jsonDir(jsonLookUpFolder),
             // lookUps: db.getLookUps(pool),
-            // countries: db.getCountries(pool),
+            countries: db.getCountries(pool),
             callData: db.getCallData(activity.contractId, pool),
             dataSet: db.getXmlData(contractActivity, pool)
                 .then(pMap(xml2js.xmlDataToJSON))

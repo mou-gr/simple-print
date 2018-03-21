@@ -14,7 +14,7 @@ const checkbox = function (el, dataSet) {
     }
 }
 const date = function (el, dataSet) {
-    const val = (dataSet[el.name] && dataSet[el.name][0]) || ''
+    const val = (dataSet[el.name] && dataSet[el.name][0]) || ' '
     const date = moment(val)
     return date.isValid() ? date.format('DD - MM - Y') : val
 }
@@ -29,39 +29,49 @@ const jsonlkp = R.curry(function (lookUps, column, row) {
     const val = (row[column.name] && row[column.name][0]) || ''
     const table = lookUps[column.lookupaction].data
         .filter(i => i[0] == val)
-    var ret = ''
+    var ret = ' '
     if (table.length >= 1) {
         ret = table[0][1]
     }
     return ret
 })
 
+const findInItems = (items, val) => R.path([0, 'lab'])(items.filter(i => i.val == val))
+const findInCountries = (countries, column, val) => R.path([0, column.labcol])(countries.filter(i => i[column.valcol] == val))
+const findInSelf = (dataSet, column, val) => {
+    if (column.njoin) {
+        const refArray = R.path(column.njoin.coords[0].jointable.split('.'), dataSet)
+        const refValue = refArray.filter(i => i[column.njoin.coords[0].joincols[0]][0] == dataSet[column.njoin.coords[0].sourcecols[0]][0])[0][column.valcol][0]
+        val = refValue
+    }
+    const table = R.path(column.lkptable.split('.'), dataSet)
+    if (table) {
+        const element = table.filter(i => i[column.valcol] == val)
+        const ret = R.path([0, column.labcol.split(';').reverse()[0], 0])(element)
+        return ret
+    }
+}
+
 const select = R.curry(function (extra, el, dataSet) {
     var val = (dataSet[el.name] && dataSet[el.name][0]) || ''
-    var ret = val
-    if (Array.isArray(el.items)) {
-        ret = R.path([0, 'lab'])(el.items.filter(i => i.val == val))
-    // } else if (el.lookup == 'dblkpgrp') {
-    //     ret = R.path([0, 'LU_LookUpDescription'])(extra.lookUps.filter(item => item[el.valcol] == val))
-    // } else if (el.lookup == 'dblkp') {
-    //     ret = R.path([0, el.labcol])(extra.countries.filter(i => i[el.valcol] == val))
-    } else if (el.lookup == 'slflkp') {
-        if (el.njoin) {
-            const refArray = R.path(el.njoin.coords[0].jointable.split('.'), extra.dataSet)
-            const refValue = refArray.filter(i => i[el.njoin.coords[0].joincols[0]][0] == dataSet[el.njoin.coords[0].sourcecols[0]][0])[0][el.valcol][0]
-            val = refValue
-        }
-        const table = R.path(el.lkptable.split('.'), extra.dataSet)
-        if (table) {
-            const element = table.filter(i => i[el.valcol] == val)
-            ret = R.path([0, el.labcol.split(';').reverse()[0], 0])(element)
-        }
-    }
-    return R.defaultTo('')(ret)
+    var ret = undefined
+
+    Array.isArray(el.items) && (ret = findInItems(el.items, val))
+    ret === undefined && el.lookup == 'dblkp' && (ret = findInCountries(extra.countries, el, val))
+    ret === undefined && el.lookup == 'slflkp' && (ret = findInSelf(extra.dataSet, el, val))
+
+    // // } else if (el.lookup == 'dblkpgrp') {
+    // //     ret = R.path([0, 'LU_LookUpDescription'])(extra.lookUps.filter(item => item[el.valcol] == val))
+    return R.defaultTo(val)(ret)
 })
 
 const getData = function (row, column, extra) {
-    const otherwise = (row, column) => R.path([column.name, 0], row) || ''
+    const otherwise = (row, column) =>  R.cond([
+        [val => typeof val == 'object', R.always(' ')],
+        [R.isNil,                       R.always(' ')],
+        [R.isEmpty,                     R.always(' ')],
+        [R.T,                           R.identity]
+    ])(R.path([column.name, 0], row))
 
     const readers = {
         select: select(extra)
