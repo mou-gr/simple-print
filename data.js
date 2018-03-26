@@ -25,10 +25,7 @@ const query = function (str, pool) {
 const getJsonData = R.memoizeWith(R.identity, function (dataKey, pool) {
     const q = `select Data from JsonData
             where DataKey = '${dataKey}'`
-    return query(q, pool).then(R.pipe(
-        R.prop('recordset')
-        , R.path([0, 'Data'])
-    ))
+    return query(q, pool).then(R.path(['recordset', 0, 'Data']))
 })
 
 const getTableData = function (contractActivityId, dataSet, path, pool) {
@@ -93,24 +90,23 @@ const getFilteredDataSet = function (activityId, metaData, pool) {
     }
     return query(str, pool)
 }
-const getCallCallPhase = async function (activityId, pool) {
-    const str = `select p.CallPhaseID as callPhaseId, p.CP_CallID as callId, ca.CA_ContractID as contractId, co.CN_Code as cnCode, ca.CA_DateFinished as dateFinished
+const getCallCallPhase = function (activityId, pool) {
+    const str = `select p.CallPhaseID as callPhaseId, p.CP_CallID as callId, ca.CA_ContractID as contractId, co.CN_Code as cnCode, ca.CA_DateFinished as dateFinished, ic.INV_InvitationID as invitationId
     from contractActivity ca
     join CallPhase p on p.callPhaseID = ca.CA_CallPHaseID
     join Contract co on co.ContractID = ca.CA_ContractID
+    join Invitation_Contract ic on ic.CO_ContractID = co.contractID
     where ContractActivityID = ${activityId}`
-    const ret = await query(str, pool)
-    return ret.recordset[0]
+    return query(str, pool)
+        .then(R.path(['recordset', 0]))
 }
 const getContractId = async function (activityId, pool) {
     const str = `select CA_ContractID from ContractActivity where ContractActivityID = ${activityId}`
     const res = await query(str, pool)
     return res.recordset[0].CA_ContractID
 }
-const getCallData = R.memoizeWith(R.identity, function (contractId, pool) {
-    const str = `select JsonData from
-        Invitation i join Invitation_Contract ic on i.ID = ic.INV_InvitationID
-        where ic.CO_ContractID = ${contractId}`
+const getCallData = R.memoizeWith(R.identity, function (invitationId, pool) {
+    const str = `select JsonData from Invitation where ID = ${invitationId}`
     return query(str, pool)
         .then(res => JSON.parse(res.recordset[0].JsonData))
 })

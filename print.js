@@ -81,13 +81,12 @@ const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, ty
     try {
         const pool = await db.getConnection()
         var activity = await db.getCallCallPhase(contractActivity, pool)
-
         const extra = await Promise.props({
             wizard: wiz.parse(wizard),
             jsonLookUps: jsonDir(jsonLookUpFolder),
             // lookUps: db.getLookUps(pool),
             countries: db.getCountries(pool),
-            callData: db.getCallData(activity.contractId, pool),
+            callData: db.getCallData(activity.invitationId, pool),
             dataSet: db.getXmlData(contractActivity, pool)
                 .then(pMap(xml2js.xmlDataToJSON))
                 .then(objArray => Object.assign({}, ...objArray))

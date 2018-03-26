@@ -12,18 +12,19 @@ app.use(bodyParser.urlencoded({
 const jsonLookUpFolder = `jsonLookUp/`
 
 app.post('/pdf', function (req, res) {
+    console.time('request ' + req.body.contractActivityId)
     pdf.createDoc(req.body.contractActivityId, req.body.wizard, jsonLookUpFolder, req.body.type)
         .then( binary => {
             res.contentType('application/pdf')
             binary.pipe(res)
+            console.timeEnd('request ' + req.body.contractActivityId)
+            // 'created pdf for activity: ' + req.body.contractActivityId)
         })
         .catch(error => {
-            console.log(error)
             res.send('error:' + error)
+            console.log('activity: ' + req.body.contractActivityId, error)
+            process.exit(-1)
         })
-    , function(error) {
-        res.send('ERROR:' + error)
-    }
 })
 
 var server = http.createServer(app)
