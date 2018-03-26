@@ -25,7 +25,7 @@ stdin()
         // console.log(binary);
     })
     .catch(e => {
-        console.log('ERROR:')
-        console.log(e)
+        console.error('ERROR:')
+        console.error(e)
         process.exit(-3)
     })

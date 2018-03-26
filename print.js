@@ -25,15 +25,16 @@ const fs = Promise.promisifyAll(oldFs)
 //flipping the arguments of Promise.mao so that my eys don't hurt
 const pMap = R.curry((a, b) => Promise.map(b, a))
 
-const jsonDir = async function(dirName) {
+const jsonDir = R.memoizeWith(R.identity, async function(dirName) {
     const ret = {}
     const files = await fs.readdirAsync(dirName)
     await Promise.all(files.map(async el => {
         const s = await fs.readFileAsync(dirName + el, 'utf8')
         ret[el] = JSON.parse(R.trim(s))
     }))
+
     return ret
-}
+})
 const printDate = date => {
     const val = moment(date)
     return val.isValid() ? val.format(' DD-MM-Y, HH:mm:ss ') : ' Σχέδιο'

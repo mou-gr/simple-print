@@ -123,14 +123,27 @@ const parseMetaData = function (el) {
             .replace(/(\r\n|\n|\r)/gm,' ') //strip newlines
         )
     } catch (e) {
-        return ['Invalid Json MetaData']
+        const newErr = new Error('Invalid JSON MetaData')
+        throw newErr
     }
 }
 
+const dataKeys = function (tableName, qualifier, callId, callPhaseId) {
+    return [
+        tableName,
+        qualifier ? `${tableName}_q${qualifier}` : undefined,
+        qualifier && callId ? `${tableName}_q${qualifier}_c${callId}` : undefined,
+        qualifier && callId && callPhaseId ? `${tableName}_q${qualifier}_c${callId}_p${callPhaseId}` : undefined
+    ].filter(R.identity)
+}
+
 const getJsonData = function (tableName, qualifier, callId, callPhaseId, pool) {
-    return db.getJsonData(tableName, qualifier, callId, callPhaseId, pool) // get All 4 jsonData
-        .then(R.map(parseMetaData)) //parse them
-        .then(R.reduce(merge, {})) //merge columns, priority to the last
+    const keys = dataKeys(tableName, qualifier, callId, callPhaseId)
+    return Promise.all(R.map(
+        k => db.getJsonData(k, pool)
+            .then(R.unless(R.isNil, parseMetaData))
+    )(keys)).then(R.reduce(merge, {})) //merge columns, priority to the last
+
 }
 
 const getSectionDescription = function getSectionDescription (activity, callData, section, pool) {

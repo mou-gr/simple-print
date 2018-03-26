@@ -22,18 +22,14 @@ const query = function (str, pool) {
         })
 }
 
-const getJsonData = function (table, qualifier, callId, callPhaseId, pool) {
+const getJsonData = R.memoizeWith(R.identity, function (dataKey, pool) {
     const q = `select Data from JsonData
-            where TableName = '${table}' and Qualifier is null and CallID is null and CallPhaseID is null
-            or TableName = '${table}' and Qualifier = '${qualifier}' and CallID is null and CallPhaseID is null
-            or TableName = '${table}' and Qualifier = '${qualifier}' and CallID = '${callId}' and CallPhaseID is null
-            or TableName = '${table}' and Qualifier = '${qualifier}' and CallID = '${callId}' and CallPhaseID = '${callPhaseId}'
-            order by DataKey`
+            where DataKey = '${dataKey}'`
     return query(q, pool).then(R.pipe(
         R.prop('recordset')
-        , R.pluck('Data')
+        , R.path([0, 'Data'])
     ))
-}
+})
 
 const getTableData = function (contractActivityId, dataSet, path, pool) {
     var q = `select
@@ -73,10 +69,10 @@ const getLookUps = async function  (pool) {
     const res = await query (`select * from LookUps `, pool)
     return res.recordset
 }
-const getCountries = async function  (pool) {
-    const res = await query (`select * from CountryISO`, pool)
-    return res.recordset
-}
+const getCountries = R.memoizeWith(R.always('countries'), function (pool) {
+    return query (`select * from CountryISO`, pool)
+        .then(R.prop('recordset'))
+})
 const getFilteredDataSet = function (activityId, metaData, pool) {
     var str
     var filter = metaData.datafilter
@@ -111,13 +107,13 @@ const getContractId = async function (activityId, pool) {
     const res = await query(str, pool)
     return res.recordset[0].CA_ContractID
 }
-const getCallData = async function (contractId, pool) {
+const getCallData = R.memoizeWith(R.identity, function (contractId, pool) {
     const str = `select JsonData from
         Invitation i join Invitation_Contract ic on i.ID = ic.INV_InvitationID
         where ic.CO_ContractID = ${contractId}`
-    const res = await query(str, pool)
-    return JSON.parse(res.recordset[0].JsonData)
-}
+    return query(str, pool)
+        .then(res => JSON.parse(res.recordset[0].JsonData))
+})
 const getContractItemDetail = async function (contractId, datafilter, pool) {
     const str = `SELECT cid.*, cac.CAD_Description, ca.CallActionID , ca.CA_CallActionCategoryID, ca.CA_Description, cee.CEE_Code, cee.CEE_Description, ce.CE_CallExpenseEnumID
 FROM ContractItem ci
