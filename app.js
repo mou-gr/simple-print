@@ -12,7 +12,6 @@ app.use(bodyParser.urlencoded({
 const jsonLookUpFolder = `jsonLookUp/`
 
 app.post('/pdf', function (req, res) {
-    console.log(JSON.stringify(req.body))
     pdf.createDoc(req.body.contractActivityId, req.body.wizard, jsonLookUpFolder, req.body.type)
         .then( binary => {
             res.contentType('application/pdf')
