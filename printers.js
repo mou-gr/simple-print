@@ -15,7 +15,6 @@ const checkbox = function (el, dataSet) {
 }
 const date = function (el, dataSet) {
     const val = (dataSet[el.name] && dataSet[el.name][0]) || ''
-    console.error('date: ' + val);
     const date = moment(val)
     return date.isValid() ? date.format('DD - MM - Y') : val
 }
