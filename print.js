@@ -56,6 +56,7 @@ const frontPage = function (activity, generalInfo) {
     }
     return [
         {text: `${activity.docType}`, style: 'coverHeader'}
+        , {image: 'logos/logo-ministry.png', fit: [800, 80], alignment: 'center', style: 'logo'}
         , {text: `Δράση: ${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
         , {text: `${generalInfo.title1 || ''}`, style: 'cover'}
         , {text: `${generalInfo.title2 || ''}`, style: 'cover'}
@@ -81,6 +82,7 @@ const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, ty
     try {
         const pool = await db.getConnection()
         var activity = await db.getCallCallPhase(contractActivity, pool)
+        if (!activity) { throw Error('Wrong activity ID', 'print.js', 84) }
         const extra = await Promise.props({
             wizard: wiz.parse(wizard),
             jsonLookUps: jsonDir(jsonLookUpFolder),
@@ -98,9 +100,6 @@ const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, ty
         db.closeConnection()
 
         const pdfDoc = await printer.createPdfKitDocument(docDefinition)
-        // await pdfDoc.pipe(fs.createWriteStream(output))
-        //pdfDoc.pipe(process.stdout)
-        // await pdfDoc.end()
         pdfDoc.end()
         return (pdfDoc)
     } catch (e) {
@@ -122,10 +121,10 @@ const styles = {
     , coverHeader: {
         fontSize: 8,
         italics: true,
-        margin: [0, 0, 0, 50]
+        margin: [0, 0, 0, 0]
     }
     , logo: {
-
+        margin: [0, 0, 0, 30]
     }
     , h2: {
         fontSize: 16,

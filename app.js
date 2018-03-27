@@ -18,10 +18,10 @@ app.post('/pdf', function (req, res) {
             res.contentType('application/pdf')
             binary.pipe(res)
             console.timeEnd('request ' + req.body.contractActivityId)
-            // 'created pdf for activity: ' + req.body.contractActivityId)
         })
         .catch(error => {
-            res.send('error:' + error)
+            res.status(500)
+            res.send(error.toString())
             console.log('activity: ' + req.body.contractActivityId, error)
             process.exit(-1)
         })
