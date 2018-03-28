@@ -167,17 +167,29 @@ const renderRow = R.curry(function renderRow (extra, columns, row) {
     ]
 })
 
+const budgetSummary = function budgetSummary () {
+    return [
+        {style: 'h1', text: 'Συνοπτικός πίνακας Δαπανών'},
+        {
+            table: {
+                widths: [200, 300],
+                body: [['TODO', 'TODO']]
+            }
+        }]
+}
+
 const renderSection = R.curry(async function renderSection (activity, extra, pool, metaData) {
 
     if (R.filter(a => a.view !== '' || a.edit !== '', metaData.columns).length <= 0) { return '' }
 
     const dataTable = await getDataTable(metaData, extra.dataSet, activity.activityId, pool)
-
-    const title = {style: 'h1', text: metaData.title}
+    const title = {style: 'h1', text: metaData.stepId + '. ' + metaData.title}
     const body = !dataTable ? ['-----------------'] //empty dataSet
         : R.map(renderRow(extra, metaData.columns), dataTable)
 
-    return [title, ...body]
+    const append = metaData.customise == 'GenericCheckpoints_qCategory81_c204' ? budgetSummary() : ''
+
+    return [title, ...body, append]
 })
 
 const samisDataTable = R.curry(async function (activity, extra, pool, section) {
@@ -189,6 +201,7 @@ const samisDataTable = R.curry(async function (activity, extra, pool, section) {
         R.sortBy(column => 1 * column.vord || 0)
     )(metaData.columns)
     metaData.columns = columns
+    metaData.stepId = section.stepId
 
     return renderSection(activity, extra, pool, metaData)
 })

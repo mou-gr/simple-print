@@ -42,7 +42,7 @@ const printDate = date => {
 
 const footer = R.curry((activity, page, pages) => ({
     columns: [
-        [`Κωδικός Ενέργειας: ${activity.activityId}`, `Ημερομηνία Οριστικοποίησης: ${printDate(activity.dateFinished)}`],
+        [`Κωδικός έργου: ${activity.cnCode}`, `Ημερομηνία Οριστικοποίησης: ${printDate(activity.dateFinished)}`],
         { text: `σελ. ${page} από ${pages}`, alignment: 'right' } ],
     margin: [40, 10, 40, 0]
 }))
@@ -50,18 +50,19 @@ const footer = R.curry((activity, page, pages) => ({
 const frontPage = function (activity, generalInfo) {
     var imageObject
     if ( oldFs.existsSync(`logos/${generalInfo.logo}`) ) {
-        imageObject = {image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [800, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
+        imageObject = {image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [550, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
     } else {
         imageObject = {text: `logos/${generalInfo.logo}`, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
     }
     return [
-        {text: `${activity.docType}`, style: 'coverHeader'}
-        , {image: 'logos/logo-ministry.png', fit: [800, 80], alignment: 'center', style: 'logo'}
-        , {text: `Δράση: ${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
+        // {text: `${activity.docType}`, style: 'coverHeader'}
+        {image: 'logos/logo-ministry.png', fit: [800, 80], alignment: 'center', style: 'logo'}
         , {text: `${generalInfo.title1 || ''}`, style: 'cover'}
         , {text: `${generalInfo.title2 || ''}`, style: 'cover'}
         , {text: `${generalInfo.title3 || ''}`, style: 'cover'}
-        , {text: `Κωδικός έργου: ${activity.cnCode}`, style: 'cover'}
+        , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
+        , {text: `${activity.docType}`, style: 'cover'}
+        , {text: `Κωδικός πράξης: ${activity.cnCode}`, style: 'cover'}
         , imageObject
     ]
 }
