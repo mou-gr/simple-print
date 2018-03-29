@@ -35,7 +35,6 @@ const parse = function (wizard) {
                 , R.map(getStep)
                 , R.flatten
                 , R.filter(R.identity)
-                , R.zipWith(R.assoc('stepId'), R.range(1, 100)) // add enumeration toy each tab
             )
         )
 }

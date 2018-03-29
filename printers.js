@@ -96,7 +96,7 @@ const strip = str => str.replace(/(&nbsp;|<ol>|<li>|<\/ol>|<\/li>)/g, ' ')
 
 const currency = s => typeof s === 'string' ? s.replace('.', ',') : s.toFixed(2).replace('.', ',')
 
-const withStyle = (s, t) => ({style: s, text: t})
+const withStyle = R.curry((s, t) => ({style: s, text: t}))
 
 const renderHeader = function renderHeader (column) {
     if (column.header.length === 1) {
@@ -167,27 +167,71 @@ const renderRow = R.curry(function renderRow (extra, columns, row) {
     ]
 })
 
-const budgetSummary = function budgetSummary () {
+const budgetSummary = function budgetSummary (activity, dataSet, extra) {
+
+    const getExpenses = function (dataSet, totalEligible) {
+        const sumProp = prop => R.pipe(
+            R.pluck(prop),
+            R.map(a => 1 * a || 0),
+            R.sum
+        )
+        const eligible = sumProp('DecVal1')(dataSet)
+        const nonEligible = sumProp('DecVal5')(dataSet)
+        const publicExpenditure = sumProp('DecVal2')(dataSet)
+        const total = eligible + nonEligible
+        // ['Συνολικό', 'Μη Επιλέξιμο', 'Επιλέξιμο', 'Δημόσια Δαπάνη', 'Επιλέξιμος / Σύνολο Επιλέξιμου (%)']
+        return [total, nonEligible, eligible, publicExpenditure, eligible / totalEligible]
+    }
+    const getExpenseCategory = R.curry(function (dataSet, totalEligible, category) {
+        const categoryLabel = category.title
+        const expenses = getExpenses(dataSet.filter(el => el.Comments13[0] == category.AA), totalEligible)
+        const formatExpenses = R.map(currency, expenses)
+
+        return [categoryLabel, ...formatExpenses]
+    })
+
+    const expenseCategories = extra.callData.tab6.KATHGORIES_DAPANON_OBJ.KATHGORIES_DAPANON_LIST
+    const total = getExpenses(dataSet, 1)
+    total.pop()
+    const totalEligible = total[2]
+
+
+    const budgetAnalysis = R.map(getExpenseCategory(dataSet, totalEligible), expenseCategories)
+
     return [
-        {style: 'h1', text: 'Συνοπτικός πίνακας Δαπανών'},
+        {style: 'h1', text: '{{rank}}. Συγκεντρωτικός πίνακας Δαπανών'},
         {
             table: {
-                widths: [200, 300],
-                body: [['TODO', 'TODO']]
+                widths: [80, 80, 80, 80, 80, '*'],
+                body: [
+                    R.map(withStyle('headerRow'))(['Κατηγορία Δαπάνης', 'Συνολικό', 'Μη Επιλέξιμο', 'Επιλέξιμο', 'Δημόσια Δαπάνη', 'Επιλέξιμος / Σύνολο Επιλέξιμου (%)']),
+                    ...budgetAnalysis,
+                    ['Συνολικά', ...total.map(currency), '']
+                ]
             }
-        }]
+        }, ' ']
 }
 
-const renderSection = R.curry(async function renderSection (activity, extra, pool, metaData) {
+const registerContractor = (activity, dataSet) => {
+    activity.contractors = R.pluck('P_LegalName', dataSet)
+    return ''
+}
 
+const afterRender = {
+    GenericCheckpoints_qCategory81_c204: budgetSummary,
+    ModificationContractor_qMulti_c204: registerContractor
+}
+
+
+const renderSection = R.curry(async function renderSection (activity, extra, pool, metaData) {
     if (R.filter(a => a.view !== '' || a.edit !== '', metaData.columns).length <= 0) { return '' }
 
     const dataTable = await getDataTable(metaData, extra.dataSet, activity.activityId, pool)
-    const title = {style: 'h1', text: metaData.stepId + '. ' + metaData.title}
+    const title = {style: 'h1', text: '{{rank}}. ' + metaData.title}
     const body = !dataTable ? ['-----------------'] //empty dataSet
         : R.map(renderRow(extra, metaData.columns), dataTable)
 
-    const append = metaData.customise == 'GenericCheckpoints_qCategory81_c204' ? budgetSummary() : ''
+    const append = typeof afterRender[metaData.customise] == 'function' ? afterRender[metaData.customise](activity, dataTable, extra) : ''
 
     return [title, ...body, append]
 })
@@ -201,7 +245,6 @@ const samisDataTable = R.curry(async function (activity, extra, pool, section) {
         R.sortBy(column => 1 * column.vord || 0)
     )(metaData.columns)
     metaData.columns = columns
-    metaData.stepId = section.stepId
 
     return renderSection(activity, extra, pool, metaData)
 })

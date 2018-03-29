@@ -40,36 +40,48 @@ const printDate = date => {
     return val.isValid() ? val.format(' DD-MM-Y, HH:mm:ss ') : ' Σχέδιο'
 }
 
-const footer = R.curry((activity, page, pages) => ({
+const footer = R.curry((activity, page, pages) => page === 1 ? {
+    text: 'Το έργο συγχρηματοδοτείται από την Ευρωπαϊκή Ένωση και την Ελλάδα',
+    alignment: 'center'
+} : {
     columns: [
-        [`Κωδικός έργου: ${activity.cnCode}`, `Ημερομηνία Οριστικοποίησης: ${printDate(activity.dateFinished)}`],
+        [`Κωδικός πράξης: ${activity.cnCode}`, `Ημερομηνία Οριστικοποίησης: ${printDate(activity.dateFinished)}`],
         { text: `σελ. ${page} από ${pages}`, alignment: 'right' } ],
     margin: [40, 10, 40, 0]
-}))
+})
 
-const frontPage = function (activity, generalInfo) {
-    var imageObject
+const frontPage = function (activity, generalInfo, extra) {
+    var imageObject, headerObject
     if ( oldFs.existsSync(`logos/${generalInfo.logo}`) ) {
         imageObject = {image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [550, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
     } else {
         imageObject = {text: `logos/${generalInfo.logo}`, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
     }
+    if ( oldFs.existsSync(`logos/${generalInfo.headerLogo}`) ) {
+        headerObject = {image: `logos/${generalInfo.headerLogo}`, fit: [550, 80], alignment: 'center', style: 'logo'}
+    } else {
+        headerObject = {text: `logos/${generalInfo.headerLogo}`, style: 'logo'}
+    }
+
+    const contractor = R.pluck('P_LegalName', R.path(['dataSet', 'ContractModificationDataSet', 'ModificationContractor'], extra)) || []
+
     return [
         // {text: `${activity.docType}`, style: 'coverHeader'}
-        {image: 'logos/logo-ministry.png', fit: [800, 80], alignment: 'center', style: 'logo'}
+        headerObject
         , {text: `${generalInfo.title1 || ''}`, style: 'cover'}
         , {text: `${generalInfo.title2 || ''}`, style: 'cover'}
         , {text: `${generalInfo.title3 || ''}`, style: 'cover'}
         , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
         , {text: `${activity.docType}`, style: 'cover'}
         , {text: `Κωδικός πράξης: ${activity.cnCode}`, style: 'cover'}
+        , {text: `Δικαιούχος: ${contractor.join(', ')}`, style: 'cover'}
         , imageObject
     ]
 }
 
 const print = function print(activity, extra, pool) {
     const content = Promise.all(R.map(printers.renderDataSet(activity, extra, pool), extra.wizard))
-    const cover = frontPage(activity, extra.callData.tab1)
+    const cover = frontPage(activity, extra.callData.tab1, extra)
 
     return Promise.props ({
         styles: styles,
@@ -100,7 +112,15 @@ const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, ty
         const docDefinition = await print(activity, extra, pool)
         db.closeConnection()
 
-        const pdfDoc = await printer.createPdfKitDocument(docDefinition)
+        //replace rank numbers for sections
+        var counter = 0
+        const dd = JSON.stringify(docDefinition)
+        const finalDefinition = JSON.parse(dd.replace(/{{rank}}/g, () => {
+            counter += 1
+            return counter
+        }))
+
+        const pdfDoc = await printer.createPdfKitDocument(finalDefinition)
         pdfDoc.end()
         return (pdfDoc)
     } catch (e) {
