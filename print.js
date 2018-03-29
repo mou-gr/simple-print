@@ -40,14 +40,16 @@ const printDate = date => {
     return val.isValid() ? val.format(' DD-MM-Y, HH:mm:ss ') : ' Σχέδιο'
 }
 
-const footer = R.curry((activity, page, pages) => page === 1 ? {
-    text: 'Το έργο συγχρηματοδοτείται από την Ευρωπαϊκή Ένωση και την Ελλάδα',
-    alignment: 'center'
-} : {
-    columns: [
-        [`Κωδικός πράξης: ${activity.cnCode}`, `Ημερομηνία Οριστικοποίησης: ${printDate(activity.dateFinished)}`],
-        { text: `σελ. ${page} από ${pages}`, alignment: 'right' } ],
-    margin: [40, 10, 40, 0]
+const footer = R.curry(function (activity, page, pages) {
+    return page === 1 ? {
+        text: 'Το έργο συγχρηματοδοτείται από την Ευρωπαϊκή Ένωση και την Ελλάδα',
+        alignment: 'center'
+    } : {
+        columns: [
+            [`Κωδικός πράξης: ${activity.cnCode}`, `Ημερομηνία Οριστικοποίησης: ${printDate(activity.dateFinished)}`],
+            { text: `σελ. ${page} από ${pages}`, alignment: 'right' } ],
+        margin: [40, 10, 40, 0]
+    }
 })
 
 const frontPage = function (activity, generalInfo, extra) {
@@ -83,10 +85,19 @@ const print = function print(activity, extra, pool) {
     const content = Promise.all(R.map(printers.renderDataSet(activity, extra, pool), extra.wizard))
     const cover = frontPage(activity, extra.callData.tab1, extra)
 
+    var counter = 0
+
     return Promise.props ({
         styles: styles,
         defaultStyle: styles.default,
-        content: content.then(doc => [cover, ...doc]),
+        content: content.then(function (doc) {
+            const temp = JSON.stringify(doc)
+            const finalDoc = JSON.parse(temp.replace(/{{rank}}/g, () => {
+                counter += 1
+                return counter
+            }))
+            return [cover, ...finalDoc]
+        }),
         footer: footer(activity)
     })
 }
@@ -112,15 +123,7 @@ const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, ty
         const docDefinition = await print(activity, extra, pool)
         db.closeConnection()
 
-        //replace rank numbers for sections
-        var counter = 0
-        const dd = JSON.stringify(docDefinition)
-        const finalDefinition = JSON.parse(dd.replace(/{{rank}}/g, () => {
-            counter += 1
-            return counter
-        }))
-
-        const pdfDoc = await printer.createPdfKitDocument(finalDefinition)
+        const pdfDoc = await printer.createPdfKitDocument(docDefinition)
         pdfDoc.end()
         return (pdfDoc)
     } catch (e) {
