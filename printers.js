@@ -146,7 +146,9 @@ const getDataTable = async function (metaData, data, activityId, pool) {
     }
     return dataSet
 }
-const renderCell = R.curry(function renderCell(extra, row, column){
+const renderCell = R.curry(function renderCell(activity, extra, row, column){
+    if (column['no-print'] == '1') { return '' }
+    if (column['no-print-tp'] == '1' && activity.docType == 'Τεχνικό Παράρτημα') { return [] }
     const value = getData(row, column, extra)
     var cell = []
     column.header && column.header != '' && cell.push(renderHeader(column))
@@ -154,8 +156,8 @@ const renderCell = R.curry(function renderCell(extra, row, column){
     return cell
 })
 
-const renderRow = R.curry(function renderRow (extra, columns, row) {
-    const rows = R.unnest(R.map(renderCell(extra, row), columns))
+const renderRow = R.curry(function renderRow (activity, extra, columns, row) {
+    const rows = R.unnest(R.map(renderCell(activity, extra, row), columns))
     const body = R.reduce(mergeWithPrev, [], rows) // merge inline fields
     return [{
         table: {
@@ -225,11 +227,13 @@ const afterRender = {
 
 const renderSection = R.curry(async function renderSection (activity, extra, pool, metaData) {
     if (R.filter(a => a.view !== '' || a.edit !== '', metaData.columns).length <= 0) { return '' }
+    if (metaData['no-print'] == '1') { return '' }
+    if (metaData['no-print-tp'] == '1' && activity.docType == 'Τεχνικό Παράρτημα') { return '' }
 
     const dataTable = await getDataTable(metaData, extra.dataSet, activity.activityId, pool)
     const title = {style: 'h1', text: '{{rank}}. ' + metaData.title}
     const body = !dataTable ? ['-----------------'] //empty dataSet
-        : R.map(renderRow(extra, metaData.columns), dataTable)
+        : R.map(renderRow(activity, extra, metaData.columns), dataTable)
 
     const append = typeof afterRender[metaData.customise] == 'function' ? afterRender[metaData.customise](activity, dataTable, extra) : ''
 
