@@ -95,7 +95,12 @@ const getData = function (row, column, extra) {
 
 const strip = str => str.replace(/(&nbsp;|<ol>|<li>|<\/ol>|<\/li>)/g, ' ')
 
-const currency = s => currencyFormatter.format(s, { locale: 'de-DE' })
+const currency = s => currencyFormatter.format(s, {
+    decimal: ',',
+    thousand: '.',
+    precision: 2,
+    format: '%v' // %s is the symbol and %v is the value
+})
 // const currency = s => typeof s === 'string' ? s.replace('.', ',') : s.toFixed(2).replace('.', ',')
 
 const withStyle = R.curry((s, t) => ({style: s, text: t}))
