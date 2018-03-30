@@ -42,7 +42,7 @@ const printDate = date => {
 
 const footer = R.curry(function (activity, page, pages) {
     return page === 1 ? {
-        text: 'Το έργο συγχρηματοδοτείται από την Ευρωπαϊκή Ένωση και την Ελλάδα',
+        text: 'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης',
         alignment: 'center'
     } : {
         columns: [

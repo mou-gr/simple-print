@@ -5,6 +5,7 @@ const db = require('./data')
 const xml2js = require('xml-to-json-promise')
 const Promise = require('bluebird')
 const jsonExport = require('./jsonExport')
+const currencyFormatter = require('currency-formatter')
 
 const checkbox = function (el, dataSet) {
     if (dataSet && dataSet[el.name] && dataSet[el.name][0] == 'true') {
@@ -94,7 +95,8 @@ const getData = function (row, column, extra) {
 
 const strip = str => str.replace(/(&nbsp;|<ol>|<li>|<\/ol>|<\/li>)/g, ' ')
 
-const currency = s => typeof s === 'string' ? s.replace('.', ',') : s.toFixed(2).replace('.', ',')
+const currency = s => currencyFormatter.format(s, { locale: 'de-DE' })
+// const currency = s => typeof s === 'string' ? s.replace('.', ',') : s.toFixed(2).replace('.', ',')
 
 const withStyle = R.curry((s, t) => ({style: s, text: t}))
 
@@ -171,7 +173,7 @@ const renderRow = R.curry(function renderRow (activity, extra, columns, row) {
 
 const budgetSummary = function budgetSummary (activity, dataSet, extra) {
 
-    const getExpenses = function (dataSet, totalEligible) {
+    const getExpenses = function (dataSet) {
         const sumProp = prop => R.pipe(
             R.pluck(prop),
             R.map(a => 1 * a || 0),
@@ -182,11 +184,11 @@ const budgetSummary = function budgetSummary (activity, dataSet, extra) {
         const publicExpenditure = sumProp('DecVal2')(dataSet)
         const total = eligible + nonEligible
         // ['Συνολικό', 'Μη Επιλέξιμο', 'Επιλέξιμο', 'Δημόσια Δαπάνη', 'Επιλέξιμος / Σύνολο Επιλέξιμου (%)']
-        return [total, nonEligible, eligible, publicExpenditure, eligible / totalEligible]
+        return [total, nonEligible, eligible, publicExpenditure]
     }
-    const getExpenseCategory = R.curry(function (dataSet, totalEligible, category) {
+    const getExpenseCategory = R.curry(function (dataSet, category) {
         const categoryLabel = category.title
-        const expenses = getExpenses(dataSet.filter(el => el.Comments13[0] == category.AA), totalEligible)
+        const expenses = getExpenses(dataSet.filter(el => el.Comments13[0] == category.AA))
         const formatExpenses = R.map(currency, expenses)
 
         return [categoryLabel, ...formatExpenses]
@@ -194,21 +196,18 @@ const budgetSummary = function budgetSummary (activity, dataSet, extra) {
 
     const expenseCategories = extra.callData.tab6.KATHGORIES_DAPANON_OBJ.KATHGORIES_DAPANON_LIST
     const total = getExpenses(dataSet, 1)
-    total.pop()
-    const totalEligible = total[2]
 
-
-    const budgetAnalysis = R.map(getExpenseCategory(dataSet, totalEligible), expenseCategories)
+    const budgetAnalysis = R.map(getExpenseCategory(dataSet), expenseCategories)
 
     return [
-        {style: 'h1', text: '{{rank}}. Συγκεντρωτικός πίνακας Δαπανών'},
+        {style: 'h1', text: '{{rank}}. ΣΥΓΚΕΝΤΡΩΤΙΚΟΣ ΠΙΝΑΚΑΣ ΔΑΠΑΝΩΝ'},
         {
             table: {
-                widths: [80, 80, 80, 80, 80, '*'],
+                widths: ['*', 80, 80, 80, 80],
                 body: [
-                    R.map(withStyle('headerRow'))(['Κατηγορία Δαπάνης', 'Συνολικό', 'Μη Επιλέξιμο', 'Επιλέξιμο', 'Δημόσια Δαπάνη', 'Επιλέξιμος / Σύνολο Επιλέξιμου (%)']),
+                    R.map(withStyle('headerRow'))(['Κατηγορία Δαπάνης', 'Συνολικό Κόστος(€)', 'Μη Επιλέξιμο Κόστος(€)', 'Επιλέξιμο Κόστος(€)', 'Δημόσια Δαπάνη (€)']),
                     ...budgetAnalysis,
-                    ['Συνολικά', ...total.map(currency), '']
+                    ['Συνολικά', ...total.map(currency)]
                 ]
             }
         }, ' ']
