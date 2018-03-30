@@ -36,7 +36,7 @@ const jsonDir = R.memoizeWith(R.identity, async function(dirName) {
     return ret
 })
 const printDate = date => {
-    const val = moment(date)
+    const val = moment.utc(date)
     return val.isValid() ? val.format(' DD-MM-Y, HH:mm:ss ') : ' Σχέδιο'
 }
 

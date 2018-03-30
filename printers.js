@@ -239,7 +239,7 @@ const renderSection = R.curry(async function renderSection (activity, extra, poo
     const body = !dataTable ? ['-----------------'] //empty dataSet
         : R.map(renderRow(activity, extra, metaData.columns), dataTable)
 
-    const append = typeof afterRender[metaData.customise] == 'function' ? afterRender[metaData.customise](activity, dataTable, extra) : ''
+    const append = dataTable && typeof afterRender[metaData.customise] == 'function' ? afterRender[metaData.customise](activity, dataTable, extra) : ''
 
     return [title, ...body, append]
 })
