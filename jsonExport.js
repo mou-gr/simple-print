@@ -12,7 +12,7 @@ const variableList = function (metaField, callPath, valField, titleField) {
         //var list = resolve(callPath, callData);
         const list = R.path(callPath.split('.'), callData)
 
-        column.items = list.map( el => ({ val: el[valField], lab: el[valField] + ' - ' + el[titleField] }) )
+        column.items = list && list.map( el => ({ val: el[valField], lab: el[valField] + ' - ' + el[titleField] }) )
 
         return metadata
     }
