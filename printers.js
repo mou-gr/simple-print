@@ -21,7 +21,7 @@ const date = function (el, dataSet) {
 }
 const number = function (el, dataSet) {
     if (dataSet && dataSet[el.name] && typeof dataSet[el.name][0] !== 'object') {
-        return `${el.name.startsWith('Comments') ? dataSet[el.name][0] : currency(dataSet[el.name][0])} `
+        return `${el.name.startsWith('Comments') || el.name.startsWith('CS_RelativeStudiesInfo') ? dataSet[el.name][0] : currency(dataSet[el.name][0])} `
     } else {
         return ' '
     }
