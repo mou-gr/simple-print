@@ -1,0 +1,1 @@
+convert file1 file2 file3 ... -resize xheight +append output_file
