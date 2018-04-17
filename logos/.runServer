@@ -1,0 +1,1 @@
+sudo -u www-data cloudcmd --columns name-size-date --root . --port 3500 --one-panel-mode
