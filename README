@@ -1,0 +1,6 @@
+command for printing 
+explanation:
+  cat the wizard file and pipe it to the programm
+  command line params are the type and contract activity id
+
+cat wizards/am1xp_advanceRequest.xml | node cli.js -t 'Αίτημα Προκαταβολής' -a 1883996

@@ -148,7 +148,7 @@ const getJsonData = function (tableName, qualifier, callId, callPhaseId, pool) {
 
 const getSectionDescription = function getSectionDescription (activity, callData, section, pool) {
     return getJsonData(section.xmlDataset, section.Qualifier, activity.callId, activity.callPhaseId, pool)
-        .then(specialMerge(callData))
+        //.then(specialMerge(callData))
 }
 
 module.exports = {getSectionDescription}

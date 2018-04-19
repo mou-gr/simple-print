@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<wizard-defs>
+  <wizard-flow id="wizAM1XP_AdvanceRequest"
+        header-url="Controls/Wizards/WizardActivitySummaryHeader.ascx"
+        icon-url="icons/apply.gif"
+        header-caption="Eνίσχυση Eπενδυτικών σχεδίων Καινοτομίας, Έρευνας και Ανάπτυξης Επιχειρήσεων, του κλάδου Χημικών – Πολυμερών Υλικών">
+    <views>
+      <view id="view0" default="true">
+        <view-step step-id="step00" />
+      </view>
+      <view id="view1">
+        <view-step step-id="step00" />
+        <view-step step-id="step11" default="true" />
+        <view-step step-id="step12" />
+        <view-step step-id="step13" />
+      </view>
+
+
+
+       <!--IX Συνημμένα Αρχεία-->
+      <view id="view9">
+        <view-step step-id="step00" />
+        <view-step step-id="step2" default="true" />
+      </view>
+      <!-- X ΟΡΙΣΤΙΚΟΠΟΙΗΣΗ ΚΑΙ ΑΠΟΣΤΟΛΗ ΤΗΣ ΕΠΕΝΔΥΤΙΚΗΣ ΠΡΟΤΑΣΗΣ -->
+      <view id="viewFinal">
+        <!--<view-step step-id="step00" />-->
+        <view-step step-id="stepLast" default="true" />
+      </view>
+    </views>
+
+    <step	id="step00"
+        url="../../SAMIS/AM1XP/Controls/ViewTOC/Advance_ViewTOC.ascx"
+        description="Οδηγός"
+        header-caption="Οδηγός"
+        autonomous="true" >
+    </step>
+
+    <step	id="step11"
+            url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx"
+            description="Γενικά Στοιχεία Έργου"
+            header-caption="Γενικά Στοιχεία Έργου"
+            autonomous="true"
+            help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param
+            id="tab_1"
+            description="Γενικά Στοιχεία Έργου"
+            url="../../SAMIS/Common/Controls/SamisDataTable.ascx"
+            auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true"/>
+            <param id="Qualifier" value="Category1" auto-set="true"/>
+          </parameters>
+        </user-control-param>
+        <user-control-param
+            id="tab_2"
+            description="Συντονιστής Έργου"
+            url="../../SAMIS/Common/Controls/SamisDataTable.ascx"
+            auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true"/>
+            <param id="Qualifier" value="Category2" auto-set="true"/>
+          </parameters>
+        </user-control-param>
+        <user-control-param
+            id="tab_3"
+            description="Επιστημονικός Υπεύθυνος Έργου"
+            url="../../SAMIS/Common/Controls/SamisDataTable.ascx"
+            auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true"/>
+            <param id="Qualifier" value="Category3" auto-set="true"/>
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+
+    <step	id="step12"
+            url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx"
+        description="Αίτημα Προκαταβολής"
+        header-caption="Αίτημα Προκαταβολής"
+        autonomous="true"
+        help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param
+            id="tab_1"
+            description="Στοιχεία Αιτήματος Προκαταβολής"
+            url="../../SAMIS/Common/Controls/SamisDataTable.ascx"
+            auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true"/>
+            <param id="Qualifier" value="Category4" auto-set="true"/>
+          </parameters>
+        </user-control-param>
+        <user-control-param
+            id="tab_2"
+            description="Στοιχεία Εγγυητικών Επιστολών"
+            url="../../SAMIS/Common/Controls/SamisDataTable.ascx"
+            auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true"/>
+            <param id="Qualifier" value="Category5" auto-set="true"/>
+          </parameters>
+        </user-control-param>
+
+      </parameters>
+    </step>
+    <step	id="step13"
+            url="../../Modules/Common/Controls/Wizards/WizardCompositeControl.ascx"
+            description="Τεκμηρίωση Αίτησης"
+            header-caption="Τεκμηρίωση Αίτησης"
+            autonomous="true"
+            help-url="">
+      <parameters>
+        <param id="PostBackOnTabClick" value="true" auto-set="true" />
+        <user-control-param
+            id="tab_1"
+            description="Δικαιολογητικά Προκαταβολής από Δικαιούχο I"
+            url="../../SAMIS/Common/Controls/SamisDataTable.ascx"
+            auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true"/>
+            <param id="Qualifier" value="Category7" auto-set="true"/>
+          </parameters>
+        </user-control-param>
+        <user-control-param
+            id="tab_2"
+            description="Δικαιολογητικά Προκαταβολής από Δικαιούχο II"
+            url="../../SAMIS/Common/Controls/SamisDataTable.ascx"
+            auto-set="false">
+          <parameters>
+            <param id="FullTableName" value="CommonDataSet.GenericCheckpoints" auto-set="true"/>
+            <param id="Qualifier" value="Category8" auto-set="true"/>
+          </parameters>
+        </user-control-param>
+      </parameters>
+    </step>
+
+    <step	id="step2"
+                url="../../Modules/Common/Controls/Wizards/CompositeControls/FlowLayoutCompositeControl.ascx"
+                description="ΣΥΝΝΗΜΕΝΑ ΑΡΧΕΙΑ"
+                header-caption="ΣΥΝΝΗΜΕΝΑ ΑΡΧΕΙΑ"
+                autonomous="true"
+                help-url="">
+            <parameters>
+                <user-control-param
+                id="tab_32"
+                description="Επισυναπτόμενα Έγγραφα"
+                url="../../SAMIS/Common/Controls/AccompanyingDocs.ascx"
+                auto-set="false">
+                  <parameters>
+                    <!--<param id="HeaderText" value="1.1 Υποβαλλόμενα δικαιολογητικά"  />-->
+                    <param id="DocType" value="1" />
+                    <param id="CallPhaseID" value="2021" />
+                    <!--<param id="InfoPanelMessage" value="Παραθέστε τυχόν άλλα δικαιολογητικά και στοιχεία  τα οποία θα περιλαμβάνονται στον υποβαλλόμενο  έντυπο φάκελο  της υποβολής." />-->
+              </parameters>
+            </user-control-param>
+            </parameters>
+        </step>
+
+    <!-- X ΟΡΙΣΤΙΚΟΠΟΙΗΣΗ ΚΑΙ ΑΠΟΣΤΟΛΗ ΤΗΣ ΕΠΕΝΔΥΤΙΚΗΣ ΠΡΟΤΑΣΗΣ -->
+    <step id="stepLast"
+          url="Controls/Wizards/WizardContractActivitySummary.ascx"
+          description="X-1. Οριστικοποίηση και Υποβολή της Πρότασης Ενστασής"
+          header-caption="X-1 Οριστικοποίηση και υποβολή της Πρότασης Ενστασής"
+          autonomous="true">
+    </step>
+
+  </wizard-flow>
+</wizard-defs>

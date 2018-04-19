@@ -91,11 +91,11 @@ const getFilteredDataSet = function (activityId, metaData, pool) {
     return query(str, pool)
 }
 const getCallCallPhase = function (activityId, pool) {
-    const str = `select p.CallPhaseID as callPhaseId, p.CP_CallID as callId, ca.CA_ContractID as contractId, co.CN_Code as cnCode, ca.CA_DateFinished as dateFinished, ic.INV_InvitationID as invitationId
+    const str = `select p.CallPhaseID as callPhaseId, p.CP_CallID as callId, ca.CA_ContractID as contractId, co.CN_Code as cnCode, ca.CA_DateFinished as dateFinished--, ic.INV_InvitationID as invitationId
     from contractActivity ca
     join CallPhase p on p.callPhaseID = ca.CA_CallPHaseID
     join Contract co on co.ContractID = ca.CA_ContractID
-    join Invitation_Contract ic on ic.CO_ContractID = co.contractID
+    --join Invitation_Contract ic on ic.CO_ContractID = co.contractID
     where ContractActivityID = ${activityId}`
     return query(str, pool)
         .then(R.path(['recordset', 0]))
@@ -106,9 +106,10 @@ const getContractId = async function (activityId, pool) {
     return res.recordset[0].CA_ContractID
 }
 const getCallData = R.memoizeWith(R.identity, function (invitationId, pool) {
-    const str = `select JsonData from Invitation where ID = ${invitationId}`
-    return query(str, pool)
-        .then(res => JSON.parse(res.recordset[0].JsonData))
+    // const str = `select JsonData from Invitation where ID = ${invitationId}`
+    // return query(str, pool)
+    //     .then(res => JSON.parse(res.recordset[0].JsonData))
+    return {}
 })
 const getContractItemDetail = async function (contractId, datafilter, pool) {
     const str = `SELECT cid.*, cac.CAD_Description, ca.CallActionID , ca.CA_CallActionCategoryID, ca.CA_Description, cee.CEE_Code, cee.CEE_Description, ce.CE_CallExpenseEnumID

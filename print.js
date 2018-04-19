@@ -54,10 +54,15 @@ const footer = R.curry(function (activity, page, pages) {
 
 const frontPage = function (activity, generalInfo, extra) {
     var imageObject, headerObject
+
+    generalInfo = {
+        headerLogo: 'logo-ministry.png',
+        TITLOS_PROSKLHSHS: 'Eνίσχυση Eπενδυτικών σχεδίων Καινοτομίας, Έρευνας και Ανάπτυξης Επιχειρήσεων, του κλάδου Χημικών – Πολυμερών Υλικών'
+    }
     if ( oldFs.existsSync(`logos/${generalInfo.logo}`) ) {
         imageObject = {image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [550, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
     } else {
-        imageObject = {text: `logos/${generalInfo.logo}`, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
+        imageObject = {text: ' '/*`logos/${generalInfo.logo}`*/, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
     }
     if ( oldFs.existsSync(`logos/${generalInfo.headerLogo}`) ) {
         headerObject = {image: `logos/${generalInfo.headerLogo}`, fit: [550, 80], alignment: 'center', style: 'logo'}
@@ -76,7 +81,7 @@ const frontPage = function (activity, generalInfo, extra) {
         , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
         , {text: `${activity.docType}`, style: 'cover'}
         , {text: `Κωδικός πράξης: ${activity.cnCode}`, style: 'cover'}
-        , {text: `Δικαιούχος: ${contractor.join(', ')}`, style: 'cover'}
+//        , {text: `Δικαιούχος: ${contractor.join(', ')}`, style: 'cover'}
         , imageObject
     ]
 }
