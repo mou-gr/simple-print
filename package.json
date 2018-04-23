@@ -2,9 +2,11 @@
   "name": "pske-printer",
   "version": "1.0.0",
   "description": "Print arbitrary submissions",
-  "main": "print.js",
+  "main": "app.js",
   "scripts": {
-    "test": "node print.js"
+    "test": "echo 'no tests yet'",
+    "start": "node app.js",
+    "start-logo-server": "sudo -u www-data cloudcmd --columns name-size-date --root logos --port $LOGOPORT --one-panel-mode"
   },
   "author": "apanagio",
   "license": "GPL-3.0",
