@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo 'no tests yet'",
     "start": "node app.js",
-    "start-logo-server": "sudo -u www-data cloudcmd --columns name-size-date --root logos --port $LOGOPORT --one-panel-mode"
+    "start-logo-staging": "sudo -u www-data cloudcmd --columns name-size-date --root logos --port 3001 --one-panel-mode",
+    "start-logo-production": "sudo -u www-data cloudcmd --columns name-size-date --root logos --port 1235 --one-panel-mode"
   },
   "author": "apanagio",
   "license": "GPL-3.0",
