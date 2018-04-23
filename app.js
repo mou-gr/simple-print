@@ -26,7 +26,7 @@ app.post('/pdf', function (req, res) {
             process.exit(-1)
         })
 })
-app.get('/close', function () {
+app.post('/close', function () {
     console.log('stop accepting connections')
     server.close(function () {
         console.log('shuting down server gracefully')
