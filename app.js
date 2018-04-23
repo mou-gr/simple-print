@@ -26,7 +26,17 @@ app.post('/pdf', function (req, res) {
             process.exit(-1)
         })
 })
-
+app.get('/close', function () {
+    console.log('stop accepting connections')
+    server.close(function () {
+        console.log('shuting down server gracefully')
+        process.exit(1)
+    })
+    setTimeout(function () {
+        console.log('shuting down server')
+        process.exit(2)
+    }, 4000)
+})
 var server = http.createServer(app)
 var port = process.env.PORT || 1234
 server.listen(port)
