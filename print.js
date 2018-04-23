@@ -74,7 +74,7 @@ const frontPage = function (activity, generalInfo, extra) {
         , {text: `${generalInfo.title2 || ''}`, style: 'cover'}
         , {text: `${generalInfo.title3 || ''}`, style: 'cover'}
         , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
-        , {text: `${activity.docType}`, style: 'cover'}
+        , {text: `${activity.docType}`, style: 'coverBold'}
         , {text: `Κωδικός πράξης: ${activity.cnCode}`, style: 'cover'}
         , {text: `Δικαιούχος: ${contractor.join(', ')}`, style: 'cover'}
         , imageObject
@@ -140,6 +140,12 @@ const styles = {
     , cover: {
         fontSize: 16,
         alignment: 'center',
+        margin: [0, 0, 0, 20]
+    }
+    , coverBold: {
+        fontSize: 16,
+        alignment: 'center',
+        bold: true,
         margin: [0, 0, 0, 20]
     }
     , coverHeader: {
