@@ -51,7 +51,17 @@ const footer = R.curry(function (activity, page, pages) {
         margin: [40, 10, 40, 0]
     }
 })
-
+const signature = function () {
+    return [
+        {text: 'Ημερομηνία:', style: 'signature'}
+        , {text: 'Υπογραφή', style: 'signature'}
+        , ' '
+        , ' '
+        , ' '
+        , ' '
+        , {text: 'Σφραγίδα', style: 'signature'}
+    ]
+}
 const frontPage = function (activity, generalInfo, extra) {
     var imageObject, headerObject
     if ( oldFs.existsSync(`logos/${generalInfo.logo}`) ) {
@@ -84,6 +94,7 @@ const frontPage = function (activity, generalInfo, extra) {
 const print = function print(activity, extra, pool) {
     const content = Promise.all(R.map(printers.renderDataSet(activity, extra, pool), extra.wizard))
     const cover = frontPage(activity, extra.callData.tab1, extra)
+    const last = signature()
 
     var counter = 0
 
@@ -96,7 +107,7 @@ const print = function print(activity, extra, pool) {
                 counter += 1
                 return counter
             }))
-            return [cover, ...finalDoc]
+            return [cover, ...finalDoc, ...last]
         }),
         footer: footer(activity)
     })
@@ -155,6 +166,9 @@ const styles = {
     }
     , logo: {
         margin: [0, 0, 0, 30]
+    }
+    , signature: {
+        alignment: 'center',
     }
     , h2: {
         fontSize: 16,
