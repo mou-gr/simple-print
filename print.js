@@ -59,8 +59,8 @@ const frontPage = function (activity, generalInfo, extra) {
         headerLogo: 'logo-ministry.png',
         TITLOS_PROSKLHSHS: 'Eνίσχυση Eπενδυτικών σχεδίων Καινοτομίας, Έρευνας και Ανάπτυξης Επιχειρήσεων, του κλάδου Χημικών – Πολυμερών Υλικών'
     }
-    if ( oldFs.existsSync(`logos/${generalInfo.logo}`) ) {
-        imageObject = {image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [550, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
+    if ( oldFs.existsSync(`logos/pepanthtr2.png`) ) {
+        imageObject = {image: `logos/pepanthtr2.png`, pageBreak: 'after', fit: [550, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
     } else {
         imageObject = {text: ' '/*`logos/${generalInfo.logo}`*/, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
     }
@@ -89,6 +89,11 @@ const frontPage = function (activity, generalInfo, extra) {
 const print = function print(activity, extra, pool) {
     const content = Promise.all(R.map(printers.renderDataSet(activity, extra, pool), extra.wizard))
     const cover = frontPage(activity, extra.callData.tab1, extra)
+    const last = [
+        {text: 'Ημερομηνία: ', style: {alignment: 'center'} },
+        ' ',
+        {text: 'Υπογραφή Εισηγητή', style: {alignment: 'center'} }
+    ]
 
     var counter = 0
 
@@ -101,7 +106,7 @@ const print = function print(activity, extra, pool) {
                 counter += 1
                 return counter
             }))
-            return [cover, ...finalDoc]
+            return [cover, ...finalDoc, last]
         }),
         footer: footer(activity)
     })
