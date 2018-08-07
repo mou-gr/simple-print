@@ -143,7 +143,6 @@ const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, ty
     }
 }
 const createDocRaw = function (definition) {
-    console.error(definition)
     var pdfDoc = printer.createPdfKitDocument(definition)
     pdfDoc.end()
     return pdfDoc
