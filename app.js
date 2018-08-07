@@ -26,6 +26,13 @@ app.post('/pdf', function (req, res) {
             process.exit(-1)
         })
 })
+app.post('/raw', function (req, res) {
+    console.time('raw request ')
+    var binary = pdf.createDocRaw(req.body)
+    res.contentType('application/pdf')
+    binary.pipe(res)
+    console.timeEnd('raw request ')
+})
 app.post('/close', function () {
     console.log('stop accepting connections')
     server.close(function () {

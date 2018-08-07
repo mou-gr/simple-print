@@ -1,6 +1,7 @@
 config.js
 public/*
 package-lock.json
+logos/*
 
 # Logs
 logs
