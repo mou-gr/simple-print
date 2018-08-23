@@ -4,6 +4,7 @@ const db = require('./data')
 const wiz = require('./wizard.js')
 const R = require('ramda')
 const printers = require('./printers.js')
+const jsonExport = require('./jsonExport')
 const Promise = require('bluebird')
 const xml2js = require('xml-to-json-promise')
 const moment = require('moment')
@@ -142,7 +143,42 @@ const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, ty
         throw(e)
     }
 }
-const createDocRaw = function (definition) {
+
+const printTab = function printTab(invitationJson, type, tab) {
+    const metadata = jsonExport.specialMerge(invitationJson, tab.metadata)
+    const data = tab.data
+
+    
+}
+const printRaw = function printRaw(invitationJson, tabArray, type) {
+ 
+    // const content = Promise.all(R.map(printers.renderDataSet(activity, extra, pool), extra.wizard))
+    const content = tabArray.map(a => printTab(invitationJson, type, a))
+    const cover = frontPage(activity, extra.callData.tab1, extra)
+    const last = signature()
+
+    var counter = 0
+
+    return Promise.props ({
+        styles: styles,
+        defaultStyle: styles.default,
+        content: content.then(function (doc) {
+            const temp = JSON.stringify(doc)
+            const finalDoc = JSON.parse(temp.replace(/{{rank}}/g, () => {
+                counter += 1
+                return counter
+            }))
+            return [cover, ...finalDoc, ...last]
+        }),
+        footer: footer(activity)
+    })
+} 
+const createDocRaw = function (request) {
+    const invitationJson = JSON.parse(request.invitationJson)
+    const tabArray = JSON.parse(request.tabArray)
+
+    const definition = printRaw(invitationJson, tabArray, request.type)
+
     var pdfDoc = printer.createPdfKitDocument(definition)
     pdfDoc.end()
     return pdfDoc

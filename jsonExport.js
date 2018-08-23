@@ -151,4 +151,4 @@ const getSectionDescription = function getSectionDescription (activity, callData
         .then(specialMerge(callData))
 }
 
-module.exports = {getSectionDescription}
+module.exports = {getSectionDescription, specialMerge}
