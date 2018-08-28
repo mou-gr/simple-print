@@ -10,7 +10,7 @@ const logResponseTime = function logResponseTime(req, res, next) {
     res.on('finish', () => {
         const elapsedHrTime = process.hrtime(startHrTime)
         const elapsedTimeInMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6
-        console.log('%s : %fms', req.path, elapsedTimeInMs, `, serverTime: ${req.body.time}ms , env: ${app.settings.env}, activity: ${req.body.activityId}`)
+        console.log('%s : %fms', req.path, elapsedTimeInMs, `, serverTime: ${req.body.time}ms, activity: ${req.body.activityId}`)
     })
     next()
 }
@@ -60,4 +60,4 @@ var server = http.createServer(app)
 var port = process.env.PORT || 2001
 server.listen(port)
 
-console.log('http server listening on %d', port)
+console.log(`env: ${app.settings.env}, http server listening on port ${port}`)
