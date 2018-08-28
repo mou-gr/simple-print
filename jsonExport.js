@@ -1,5 +1,4 @@
 const R = require('ramda')
-const db = require('./data')
 
 const variableList = function (metaField, callPath, valField, titleField) {
     return function (metadata, callData) {
@@ -112,43 +111,8 @@ const merge = function merge (weak, strong) {
     return merged
 }
 const mergeCompiledData = function (metaData, callData) {
-    const compiled = JSON.parse(callData.compiled)
-    return merge(metaData, compiled[metaData.customise])
+    //const compiled = JSON.parse(callData.compiled)
+    return merge(metaData, callData.compiled[metaData.customise])
 }
 
-const parseMetaData = function (el) {
-    try {
-        return JSON.parse(el
-            .replace(/\t+/g, ' ')  //strip tabs
-            .replace(/(\r\n|\n|\r)/gm,' ') //strip newlines
-        )
-    } catch (e) {
-        const newErr = new Error('Invalid JSON MetaData')
-        throw newErr
-    }
-}
-
-const dataKeys = function (tableName, qualifier, callId, callPhaseId) {
-    return [
-        tableName,
-        qualifier ? `${tableName}_q${qualifier}` : undefined,
-        qualifier && callId ? `${tableName}_q${qualifier}_c${callId}` : undefined,
-        qualifier && callId && callPhaseId ? `${tableName}_q${qualifier}_c${callId}_p${callPhaseId}` : undefined
-    ].filter(R.identity)
-}
-
-const getJsonData = function (tableName, qualifier, callId, callPhaseId, pool) {
-    const keys = dataKeys(tableName, qualifier, callId, callPhaseId)
-    return Promise.all(R.map(
-        k => db.getJsonData(k, pool)
-            .then(R.unless(R.isNil, parseMetaData))
-    )(keys)).then(R.reduce(merge, {})) //merge columns, priority to the last
-
-}
-
-const getSectionDescription = function getSectionDescription (activity, callData, section, pool) {
-    return getJsonData(section.xmlDataset, section.Qualifier, activity.callId, activity.callPhaseId, pool)
-        .then(specialMerge(callData))
-}
-
-module.exports = {getSectionDescription, specialMerge}
+module.exports = {specialMerge}

@@ -2,37 +2,48 @@ var http = require('http')
 var express = require('express')
 var bodyParser = require('body-parser')
 const pdf = require('./print')
+const fs = require('fs')
+const R = require('ramda')
+
+const logResponseTime = function logResponseTime(req, res, next) {
+    const startHrTime = process.hrtime()
+    res.on('finish', () => {
+        const elapsedHrTime = process.hrtime(startHrTime)
+        const elapsedTimeInMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6
+        console.log('%s : %fms', req.path, elapsedTimeInMs, `, serverTime: ${req.body.time}ms , env: ${app.settings.env}, activity: ${req.ActivityID}`)
+    })
+    next()
+}
 
 var app = express()
+app.use(logResponseTime)
+
+const jsonLookUpFolder = './jsonLookUp/'
+
+const jsonDir = function (dirName) {
+    const lookUps = {}
+    const files = fs.readdirSync(dirName)
+
+    files.map(el => {
+        const s = fs.readFileSync(dirName + el, 'utf8')
+        lookUps[el] = JSON.parse(R.trim(s))
+    })
+    return lookUps
+}
+
+const jsonLookUp = jsonDir(jsonLookUpFolder)
 
 app.use(bodyParser.json({ limit: '50mb' }))
 app.use(bodyParser.urlencoded({
     extended: true,
     limit: '50mb'
 }))
-const jsonLookUpFolder = `jsonLookUp/`
 
 app.post('/pdf', function (req, res) {
-    console.time('request ' + req.body.contractActivityId)
-    pdf.createDoc(req.body.contractActivityId, req.body.wizard, jsonLookUpFolder, req.body.type)
-        .then( binary => {
-            res.contentType('application/pdf')
-            binary.pipe(res)
-            console.timeEnd('request ' + req.body.contractActivityId)
-        })
-        .catch(error => {
-            res.status(500)
-            res.send(error.toString())
-            console.log('activity: ' + req.body.contractActivityId, error)
-            process.exit(-1)
-        })
-})
-app.post('/raw', function (req, res) {
-    console.time('raw request ')
-    var binary = pdf.createDocRaw(req.body)
+    req.body.jsonLookUp = jsonLookUp
+    var binary = pdf.createDoc(req.body)
     res.contentType('application/pdf')
     binary.pipe(res)
-    console.timeEnd('raw request ')
 })
 app.post('/close', function () {
     console.log('stop accepting connections')
@@ -46,7 +57,7 @@ app.post('/close', function () {
     }, 4000)
 })
 var server = http.createServer(app)
-var port = process.env.PORT || 1234
+var port = process.env.PORT || 2000
 server.listen(port)
 
 console.log('http server listening on %d', port)

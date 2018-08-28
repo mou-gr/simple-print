@@ -1,34 +1,33 @@
 'use strict'
 const R = require('ramda')
-const moment = require('moment')
-const db = require('./data')
-const xml2js = require('xml-to-json-promise')
-const Promise = require('bluebird')
-const jsonExport = require('./jsonExport')
 const currencyFormatter = require('currency-formatter')
 
+const string2num = str => 1 * str.replace(/\./g, '').replace(/,/g, '.')
 const checkbox = function (el, dataSet) {
-    if (dataSet && dataSet[el.name] && dataSet[el.name][0] == 'true') {
+    if (dataSet && dataSet[el.name] == 'true') {
         return 'NAI'
     } else {
         return 'ΟΧΙ'
     }
 }
 const date = function (el, dataSet) {
-    const val = (dataSet[el.name] && dataSet[el.name][0]) || ''
-    const date = moment(val)
-    return date.isValid() ? date.format('DD - MM - Y') : val
+    // const val = dataSet[el.name] || ''
+    // const date = moment(val)
+    // return date.isValid() ? date.format('DD - MM - Y') : val
+
+    return dataSet[el.name] || ''
 }
 const number = function (el, dataSet) {
-    if (dataSet && dataSet[el.name] && typeof dataSet[el.name][0] !== 'object') {
-        return `${el.name.startsWith('Comments') || el.name.startsWith('CS_RelativeStudiesInfo') ? dataSet[el.name][0] : currency(dataSet[el.name][0])} `
+    if (dataSet && typeof dataSet[el.name] !== 'object') {
+        return `${el.name.startsWith('Comments') || el.name.startsWith('CS_RelativeStudiesInfo') ? dataSet[el.name] : currency(string2num(dataSet[el.name]))} `
     } else {
         return ' '
     }
 }
 const jsonlkp = R.curry(function (lookUps, column, row) {
-    const val = (row[column.name] && row[column.name][0]) || ''
-    const table = lookUps[column.lookupaction].data
+    const val = row[column.name] || ''
+    const table = lookUps[column.lookupaction]
+        .data
         .filter(i => i[0] == val)
     var ret = ' '
     if (table.length >= 1) {
@@ -37,48 +36,27 @@ const jsonlkp = R.curry(function (lookUps, column, row) {
     return ret
 })
 
-const findInItems = (items, val) => R.path([0, 'lab'])(items.filter(i => i.val == val))
-const findInCountries = (countries, column, val) => R.path([0, column.labcol])(countries.filter(i => i[column.valcol] == val))
-const findInSelf = (dataSet, column, val) => {
-    if (column.njoin) {
-        const refArray = R.path(column.njoin.coords[0].jointable.split('.'), dataSet)
-        const refValue = refArray.filter(i => i[column.njoin.coords[0].joincols[0]][0] == dataSet[column.njoin.coords[0].sourcecols[0]][0])[0][column.valcol][0]
-        val = refValue
-    }
-    const table = R.path(column.lkptable.split('.'), dataSet)
-    if (table) {
-        const element = table.filter(i => i[column.valcol] == val)
-        const ret = R.path([0, column.labcol.split(';').reverse()[0], 0])(element)
-        return ret
-    }
+
+const select = function (el, dataSet) {
+    const val = dataSet[el.name] || ''
+    const ret = R.path([0, 'lab'])(el.items.filter(i => i.val == val))
+
+    return R.defaultTo(val)(ret)
 }
 
-const select = R.curry(function (extra, el, dataSet) {
-    var val = (dataSet[el.name] && dataSet[el.name][0]) || ''
-    var ret = undefined
-
-    Array.isArray(el.items) && (ret = findInItems(el.items, val))
-    ret === undefined && el.lookup == 'dblkp' && (ret = findInCountries(extra.countries, el, val))
-    ret === undefined && el.lookup == 'slflkp' && (ret = findInSelf(extra.dataSet, el, val))
-
-    // // } else if (el.lookup == 'dblkpgrp') {
-    // //     ret = R.path([0, 'LU_LookUpDescription'])(extra.lookUps.filter(item => item[el.valcol] == val))
-    return R.defaultTo(val)(ret)
-})
-
-const getData = function (row, column, extra) {
+const getData = function (extra, row, column) {
     const otherwise = (row, column) =>  R.cond([
         [val => typeof val == 'object', R.always(' ')],
         [R.isNil,                       R.always(' ')],
         [R.isEmpty,                     R.always(' ')],
-        [R.T,                           R.identity]
-    ])(R.path([column.name, 0], row))
+        [R.T,                           R.identity]  //always true 
+    ])(R.path([column.name], row))
 
     const readers = {
-        select: select(extra)
-        , radio: select(extra)
+        select: select
+        , radio: select
         , checkbox: checkbox
-        , jsonlkp: jsonlkp(extra.jsonLookUps)
+        , jsonlkp: jsonlkp(extra.lookUps)
         , date2: date
         , date: date
         , number: number
@@ -142,29 +120,18 @@ const mergeWithPrev = function (acc, value) {
 
 const renderLabel = label => withStyle('label', label && label != '' ? strip(label) : ' ')
 
-const getDataTable = async function (metaData, data, activityId, pool) {
-    var dataSet
-    if (metaData.datafilter) {
-        const xml = await db.getFilteredDataSet(activityId, metaData, pool)
-        const pXml = xml.recordset.length > 0 && await Promise.all(xml.recordset.map(i => xml2js.xmlDataToJSON(i.value) ))
-        pXml && (dataSet = pXml.map(el => el[Object.keys(el)[0]]))
-    }  else {
-        dataSet = R.path(metaData.name.split('.'), data)
-    }
-    return dataSet
-}
-const renderCell = R.curry(function renderCell(activity, extra, row, column){
+const renderCell = R.curry(function renderCell(extra, row, column){
     if (column['no-print'] == '1') { return '' }
-    if (column['no-print-tp'] == '1' && activity.docType == 'Τεχνικό Παράρτημα') { return [] }
-    const value = getData(row, column, extra)
+    if (column['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return [] }
+    const value = getData(extra, row, column)
     var cell = []
     column.header && column.header != '' && cell.push(renderHeader(column))
     cell.push([renderLabel(column.label), value, column.inline]) //mark at 3rd position if it needs to be merged with the previous
     return cell
 })
 
-const renderRow = R.curry(function renderRow (activity, extra, columns, row) {
-    const rows = R.unnest(R.map(renderCell(activity, extra, row), columns))
+const renderRow = R.curry(function renderRow (extra, columns, row) {
+    const rows = R.unnest(R.map(renderCell(extra, row), columns))
     const body = R.reduce(mergeWithPrev, [], rows) // merge inline fields
     return [{
         table: {
@@ -176,24 +143,24 @@ const renderRow = R.curry(function renderRow (activity, extra, columns, row) {
     ]
 })
 
-const budgetSummary = function budgetSummary (activity, dataSet, extra) {
+const budgetSummary = function budgetSummary (dataSet, extra) {
 
     const getExpenses = function (dataSet) {
         const sumProp = prop => R.pipe(
             R.pluck(prop),
-            R.map(a => 1 * a || 0),
+            R.map(a => string2num(a) || 0),
             R.sum
         )
         const eligible = sumProp('DecVal1')(dataSet)
         const nonEligible = sumProp('DecVal5')(dataSet)
         const publicExpenditure = sumProp('DecVal2')(dataSet)
         const total = eligible + nonEligible
-        // ['Συνολικό', 'Μη Επιλέξιμο', 'Επιλέξιμο', 'Δημόσια Δαπάνη', 'Επιλέξιμος / Σύνολο Επιλέξιμου (%)']
+
         return [total, nonEligible, eligible, publicExpenditure]
     }
     const getExpenseCategory = R.curry(function (dataSet, category) {
         const categoryLabel = category.title
-        const expenses = getExpenses(dataSet.filter(el => el.Comments13[0] == category.AA))
+        const expenses = getExpenses(dataSet.filter(el => el.Comments13 == category.AA))
         const formatExpenses = R.map(currency, expenses)
 
         return [categoryLabel, ...formatExpenses]
@@ -218,8 +185,8 @@ const budgetSummary = function budgetSummary (activity, dataSet, extra) {
         }, ' ']
 }
 
-const registerContractor = (activity, dataSet) => {
-    activity.contractors = R.pluck('P_LegalName', dataSet)
+const registerContractor = (dataSet, extra) => {
+    extra.contractors = R.pluck('P_LegalName', dataSet)
     return ''
 }
 
@@ -228,24 +195,21 @@ const afterRender = {
     ModificationContractor_qMulti_c204: registerContractor
 }
 
-
-const renderSection = R.curry(async function renderSection (activity, extra, pool, metaData) {
-    if (R.filter(a => a.view !== '' || a.edit !== '', metaData.columns).length <= 0) { return '' }
+const renderSection = function renderSection (metaData, data, extra) {
+    if (metaData.columns.length <= 0) { return '' }
     if (metaData['no-print'] == '1') { return '' }
-    if (metaData['no-print-tp'] == '1' && activity.docType == 'Τεχνικό Παράρτημα') { return '' }
+    if (metaData['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return '' }
 
-    const dataTable = await getDataTable(metaData, extra.dataSet, activity.activityId, pool)
     const title = {style: 'h1', text: '{{rank}}. ' + metaData.title}
-    const body = !dataTable ? ['-----------------'] //empty dataSet
-        : R.map(renderRow(activity, extra, metaData.columns), dataTable)
+    const body = data.length == 0 ? ['-----------------'] //empty dataSet
+        : R.map(renderRow(extra, metaData.columns), data)
 
-    const append = dataTable && typeof afterRender[metaData.customise] == 'function' ? afterRender[metaData.customise](activity, dataTable, extra) : ''
+    const append = data.length > 0 && typeof afterRender[metaData.customise] == 'function' ? afterRender[metaData.customise](data, extra) : ''
 
     return [title, ...body, append]
-})
+}
 
-const samisDataTable = R.curry(async function (activity, extra, pool, section) {
-    var metaData = await jsonExport.getSectionDescription(activity, extra.callData, section, pool)
+const samisDataTable = function samisDataTable (metaData, data, extra) {
 
     const columns = R.pipe(
         R.filter(column => column.view !== '' || column.edit !== ''),
@@ -254,17 +218,21 @@ const samisDataTable = R.curry(async function (activity, extra, pool, section) {
     )(metaData.columns)
     metaData.columns = columns
 
-    return renderSection(activity, extra, pool, metaData)
-})
-
+    return renderSection(metaData, data, extra)
+}
+const raw = function raw (metadata, data, extra) {
+    return data
+}
 const printers = {
-    SamisDataTable: samisDataTable
+    samis: samisDataTable,
+    raw: raw
 }
 
 //gets a dataSet description from wizard section, calls the corresponding function from the printers array
-const renderDataSet = R.curry(function (activity, extra, pool, dataSet) {
-    return printers[dataSet.type](activity, extra, pool, dataSet)
-})
+const renderDataSet = function renderDataSet(metadata, data, extra, type) {
+    if (typeof(printers[type]) !== 'function') return ''
 
+    return printers[type](metadata, data, extra)
+}
 
 module.exports = {renderDataSet}

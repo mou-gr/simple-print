@@ -1,14 +1,9 @@
 /*jslint node:true*/
 'use strict'
-const db = require('./data')
-const wiz = require('./wizard.js')
 const R = require('ramda')
-const printers = require('./printers.js')
 const jsonExport = require('./jsonExport')
-const Promise = require('bluebird')
-const xml2js = require('xml-to-json-promise')
-const moment = require('moment')
 const oldFs = require('fs')
+const printers = require('./printers')
 
 const fonts = {
     Roboto: {
@@ -21,33 +16,20 @@ const fonts = {
 
 const PdfPrinter = require('pdfmake/src/printer')
 const printer = new PdfPrinter(fonts)
-const fs = Promise.promisifyAll(oldFs)
 
-//flipping the arguments of Promise.mao so that my eys don't hurt
-const pMap = R.curry((a, b) => Promise.map(b, a))
-
-const jsonDir = R.memoizeWith(R.identity, async function(dirName) {
-    const ret = {}
-    const files = await fs.readdirAsync(dirName)
-    await Promise.all(files.map(async el => {
-        const s = await fs.readFileAsync(dirName + el, 'utf8')
-        ret[el] = JSON.parse(R.trim(s))
-    }))
-
-    return ret
-})
 const printDate = date => {
-    const val = moment.utc(date)
-    return val.isValid() ? val.format(' DD-MM-Y, HH:mm:ss ') : ' Σχέδιο'
+    // const val = moment.utc(date)
+    // return val.isValid() ? val.format(' DD-MM-Y, HH:mm:ss ') : ' Σχέδιο'
+    return date
 }
 
-const footer = R.curry(function (activity, page, pages) {
+const footer = R.curry(function (extra, page, pages) {
     return page === 1 ? {
         text: 'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης',
         alignment: 'center'
     } : {
         columns: [
-            [`Κωδικός πράξης: ${activity.cnCode}`, `Ημερομηνία Οριστικοποίησης: ${printDate(activity.dateFinished)}`],
+            [`Κωδικός πράξης: ${extra.cnCode}`, `Ημερομηνία Οριστικοποίησης: ${printDate(extra.dateFinished)}`],
             { text: `σελ. ${page} από ${pages}`, alignment: 'right' } ],
         margin: [40, 10, 40, 0]
     }
@@ -63,7 +45,8 @@ const signature = function () {
         , {text: 'Σφραγίδα', style: 'signature'}
     ]
 }
-const frontPage = function (activity, generalInfo, extra) {
+const frontPage = function (extra) {
+    const generalInfo = extra.callData.tab1
     var imageObject, headerObject
     if ( oldFs.existsSync(`logos/${generalInfo.logo}`) ) {
         imageObject = {image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [550, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
@@ -76,7 +59,7 @@ const frontPage = function (activity, generalInfo, extra) {
         headerObject = {text: `logos/${generalInfo.headerLogo}`, style: 'logo'}
     }
 
-    const contractor = R.pluck('P_LegalName', R.path(['dataSet', 'ContractModificationDataSet', 'ModificationContractor'], extra)) || []
+    const contractor = extra.contractors || []
 
     return [
         // {text: `${activity.docType}`, style: 'coverHeader'}
@@ -85,99 +68,58 @@ const frontPage = function (activity, generalInfo, extra) {
         , {text: `${generalInfo.title2 || ''}`, style: 'cover'}
         , {text: `${generalInfo.title3 || ''}`, style: 'cover'}
         , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
-        , {text: `${activity.docType}`, style: 'coverBold'}
-        , {text: `Κωδικός πράξης: ${activity.cnCode}`, style: 'cover'}
+        , {text: `${extra.docType}`, style: 'coverBold'}
+        , {text: `Κωδικός πράξης: ${extra.cnCode}`, style: 'cover'}
         , {text: `Δικαιούχος: ${contractor.join(', ')}`, style: 'cover'}
         , imageObject
     ]
 }
-
-const print = function print(activity, extra, pool) {
-    const content = Promise.all(R.map(printers.renderDataSet(activity, extra, pool), extra.wizard))
-    const cover = frontPage(activity, extra.callData.tab1, extra)
-    const last = signature()
-
-    var counter = 0
-
-    return Promise.props ({
-        styles: styles,
-        defaultStyle: styles.default,
-        content: content.then(function (doc) {
-            const temp = JSON.stringify(doc)
-            const finalDoc = JSON.parse(temp.replace(/{{rank}}/g, () => {
-                counter += 1
-                return counter
-            }))
-            return [cover, ...finalDoc, ...last]
-        }),
-        footer: footer(activity)
-    })
-}
-
-const createDoc = async function (contractActivity, wizard, jsonLookUpFolder, type) {
-    try {
-        const pool = await db.getConnection()
-        var activity = await db.getCallCallPhase(contractActivity, pool)
-        if (!activity) { throw Error('Wrong activity ID', 'print.js', 84) }
-        const extra = await Promise.props({
-            wizard: wiz.parse(wizard),
-            jsonLookUps: jsonDir(jsonLookUpFolder),
-            // lookUps: db.getLookUps(pool),
-            countries: db.getCountries(pool),
-            callData: db.getCallData(activity.invitationId, pool),
-            dataSet: db.getXmlData(contractActivity, pool)
-                .then(pMap(xml2js.xmlDataToJSON))
-                .then(objArray => Object.assign({}, ...objArray))
-        })
-
-        activity.activityId = contractActivity
-        activity.docType = type
-        const docDefinition = await print(activity, extra, pool)
-        db.closeConnection()
-
-        const pdfDoc = await printer.createPdfKitDocument(docDefinition)
-        pdfDoc.end()
-        return (pdfDoc)
-    } catch (e) {
-        db.closeConnection()
-        throw(e)
-    }
-}
-
-const printTab = function printTab(invitationJson, type, tab) {
-    const metadata = jsonExport.specialMerge(invitationJson, tab.metadata)
-    const data = tab.data
-
+const printTab = function printTab(extra, tab) {
+    const metadata = jsonExport.specialMerge(extra.callData, JSON.parse(tab.metadata))
+    const data = JSON.parse(tab.data || '[]')
     
+    return printers.renderDataSet(metadata, data, extra, tab.type)
 }
-const printRaw = function printRaw(invitationJson, tabArray, type) {
- 
-    // const content = Promise.all(R.map(printers.renderDataSet(activity, extra, pool), extra.wizard))
-    const content = tabArray.map(a => printTab(invitationJson, type, a))
-    const cover = frontPage(activity, extra.callData.tab1, extra)
+const print = function print(tabArray, extra) {
+    var counter = 0
+    const content = R.pipe(
+        R.map(a => printTab(extra, a)),
+        JSON.stringify,
+        str => str.replace(/{{rank}}/g, () => {
+            counter += 1
+            return counter
+        }),
+        JSON.parse
+    )(tabArray)
+    const cover = frontPage(extra)
     const last = signature()
 
-    var counter = 0
-
-    return Promise.props ({
+    return {
         styles: styles,
         defaultStyle: styles.default,
-        content: content.then(function (doc) {
-            const temp = JSON.stringify(doc)
-            const finalDoc = JSON.parse(temp.replace(/{{rank}}/g, () => {
-                counter += 1
-                return counter
-            }))
-            return [cover, ...finalDoc, ...last]
-        }),
-        footer: footer(activity)
-    })
+        content: [cover, ...content, ...last],
+        footer: footer(extra)
+    }
 } 
-const createDocRaw = function (request) {
-    const invitationJson = JSON.parse(request.invitationJson)
+const createDoc = function (request) {
+    const callData = JSON.parse(request.invitationJson)
+    const compiled = JSON.parse(callData.compiled || '{}')
+    callData.compiled = compiled
+    //if following params exisit in the request overwrite relevant callData fields
+    ; ['logo', 'headerLogo', 'TITLOS_PROSKLHSHS', 'title1', 'title2', 'title3'].map(a =>
+        request[a] && (callData.tab1[a] = request[a])
+    )
+    request.logo && (callData.tab1.logo = request.logo)
     const tabArray = JSON.parse(request.tabArray)
+    var extra = {
+        docType: request.type,
+        lookUps: request.jsonLookUp,
+        cnCode: request.cnCode,
+        dateFinished: request.dateFinished,
+        callData: callData
+    }
 
-    const definition = printRaw(invitationJson, tabArray, request.type)
+    const definition = print(tabArray, extra)
 
     var pdfDoc = printer.createPdfKitDocument(definition)
     pdfDoc.end()
@@ -236,4 +178,4 @@ const styles = {
     }
 }
 
-module.exports = {createDoc, createDocRaw}
+module.exports = {createDoc}
