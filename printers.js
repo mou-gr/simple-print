@@ -121,7 +121,7 @@ const mergeWithPrev = function (acc, value) {
 const renderLabel = label => withStyle('label', label && label != '' ? strip(label) : ' ')
 
 const renderCell = R.curry(function renderCell(extra, row, column){
-    if (column['no-print'] == '1') { return '' }
+    if (column['no-print'] == '1') { return [] }
     if (column['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return [] }
     const value = getData(extra, row, column)
     var cell = []
