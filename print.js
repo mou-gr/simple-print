@@ -75,7 +75,7 @@ const frontPage = function (extra) {
     ]
 }
 const printTab = function printTab(extra, tab) {
-    const metadata = jsonExport.specialMerge(extra.callData, JSON.parse(tab.metadata))
+    const metadata = jsonExport.specialMerge(extra.callData, JSON.parse(tab.metadata || '{}'))
     const dataString = tab.data || '[]'
     const data = JSON.parse(dataString.replace(/(\r\n|\n|\r|\t)/gm,' '))
     

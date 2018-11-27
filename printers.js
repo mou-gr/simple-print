@@ -194,7 +194,10 @@ const afterRender = {
     GenericCheckpoints_qCategory81_c204: budgetSummary,
     ModificationContractor_qMulti_c204: registerContractor,
     ModificationContractor_qMulti_c204_p2177: registerContractor, 
-    ModificationContractor_qMulti_c204_p2129: registerContractor
+    ModificationContractor_qMulti_c204_p2129: registerContractor, 
+    ModificationContractor_qMulti_c204_p2131: registerContractor, 
+    ModificationContractor_qMulti_c204_p2178: registerContractor, 
+    ModificationContractor_qMulti_c204_p2179: registerContractor
 }
 
 const renderSection = function renderSection (metaData, data, extra) {
