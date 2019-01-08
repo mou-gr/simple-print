@@ -39,7 +39,8 @@ const jsonlkp = R.curry(function (lookUps, column, row) {
 
 const select = function (el, dataSet) {
     const val = dataSet[el.name] || ''
-    const ret = R.path([0, 'lab'])(el.items.filter(i => i.val == val))
+    const items = el.items || []
+    const ret = R.path([0, 'lab'])(items.filter(i => i.val == val))
 
     return R.defaultTo(val)(ret)
 }
