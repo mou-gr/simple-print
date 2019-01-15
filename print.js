@@ -70,7 +70,7 @@ const frontPage = function (extra) {
         , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
         , {text: `${extra.docType}`, style: 'coverBold'}
         , {text: `Κωδικός πράξης: ${extra.cnCode}`, style: 'cover'}
-        , {text: `Δικαιούχος: ${contractor.join(', ')}`, style: 'cover'}
+        , contractor.length > 0 ? {text: `Δικαιούχος: ${contractor.join(', ')}`, style: 'cover'} : ''
         , imageObject
     ]
 }
