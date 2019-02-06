@@ -1,13 +1,14 @@
 'use strict'
 const R = require('ramda')
 const currencyFormatter = require('currency-formatter')
+const T = require('./translation')
 
 const string2num = str => 1 * str.replace(/\./g, '').replace(/,/g, '.')
-const checkbox = function (el, dataSet) {
+const checkbox = function (el, dataSet, extra) {
     if (dataSet && dataSet[el.name] == 'true') {
-        return 'NAI'
+        return T.getTranslation(extra.language, 'NAI')
     } else {
-        return 'ΟΧΙ'
+        return T.getTranslation(extra.language, 'ΟΧΙ')
     }
 }
 const date = function (el, dataSet) {
@@ -66,7 +67,7 @@ const getData = function (extra, row, column) {
     }
 
     if (typeof readers[column.etype] === 'function') {
-        return readers[column.etype](column, row)
+        return readers[column.etype](column, row, extra)
     } else {
         return otherwise(row, column)
     }
@@ -173,14 +174,14 @@ const budgetSummary = function budgetSummary (dataSet, extra) {
     const budgetAnalysis = R.map(getExpenseCategory(dataSet), expenseCategories)
 
     return [
-        {style: 'h1', text: '{{rank}}. ΣΥΓΚΕΝΤΡΩΤΙΚΟΣ ΠΙΝΑΚΑΣ ΔΑΠΑΝΩΝ'},
+        {style: 'h1', text: `{{rank}}. ${T.getTranslation(extra.language, 'ΣΥΓΚΕΝΤΡΩΤΙΚΟΣ ΠΙΝΑΚΑΣ ΔΑΠΑΝΩΝ')}`},
         {
             table: {
                 widths: ['*', 80, 80, 80, 80],
                 body: [
-                    R.map(withStyle('headerRow'))(['Κατηγορία Δαπάνης', 'Συνολικό Κόστος(€)', 'Μη Επιλέξιμο Κόστος(€)', 'Επιλέξιμο Κόστος(€)', 'Δημόσια Δαπάνη (€)']),
+                    R.map(withStyle('headerRow'))(['Κατηγορία Δαπάνης', 'Συνολικό Κόστος(€)', 'Μη Επιλέξιμο Κόστος(€)', 'Επιλέξιμο Κόστος(€)', 'Δημόσια Δαπάνη (€)'].map(a => T.getTranslation(extra.language, a))),
                     ...budgetAnalysis,
-                    ['Συνολικά', ...total.map(currency)]
+                    [T.getTranslation(extra.language, 'Συνολικά'), ...total.map(currency)]
                 ]
             }
         }, ' ']

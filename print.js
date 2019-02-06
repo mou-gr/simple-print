@@ -4,6 +4,7 @@ const R = require('ramda')
 const jsonExport = require('./jsonExport')
 const oldFs = require('fs')
 const printers = require('./printers')
+const T = require('./translation')
 
 const fonts = {
     Roboto: {
@@ -25,24 +26,24 @@ const printDate = date => {
 
 const footer = R.curry(function (extra, page, pages) {
     return page === 1 ? {
-        text: 'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης',
+        text: T.getTranslation(extra.language, 'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης'),
         alignment: 'center'
     } : {
         columns: [
-            [`Κωδικός πράξης: ${extra.cnCode}`, `Ημερομηνία Οριστικοποίησης: ${printDate(extra.dateFinished)}`],
-            { text: `σελ. ${page} από ${pages}`, alignment: 'right' } ],
+            [`${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, `${T.getTranslation(extra.language, 'Ημερομηνία Οριστικοποίησης')}: ${T.getTranslation(extra.language, printDate(extra.dateFinished))}`],
+            { text: `${T.getTranslation(extra.language, 'σελ.')} ${page} ${T.getTranslation(extra.language, 'από')} ${pages}`, alignment: 'right' } ],
         margin: [40, 10, 40, 0]
     }
 })
-const signature = function () {
+const signature = function (extra) {
     return [
-        {text: 'Ημερομηνία:', style: 'signature'}
-        , {text: 'Υπογραφή', style: 'signature'}
+        {text: `${T.getTranslation(extra.language, 'Ημερομηνία')} :`, style: 'signature'}
+        , {text: `${T.getTranslation(extra.language, 'Υπογραφή')}`, style: 'signature'}
         , ' '
         , ' '
         , ' '
         , ' '
-        , {text: 'Σφραγίδα', style: 'signature'}
+        , {text: `${T.getTranslation(extra.language, 'Σφραγίδα')}`, style: 'signature'}
     ]
 }
 const frontPage = function (extra) {
@@ -69,8 +70,8 @@ const frontPage = function (extra) {
         , {text: `${generalInfo.title3 || ''}`, style: 'cover'}
         , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
         , {text: `${extra.docType}`, style: 'coverBold'}
-        , {text: `Κωδικός πράξης: ${extra.cnCode}`, style: 'cover'}
-        , contractor.length > 0 ? {text: `Δικαιούχος: ${contractor.join(', ')}`, style: 'cover'} : ''
+        , {text: `${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, style: 'cover'}
+        , contractor.length > 0 ? {text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover'} : ''
         , imageObject
     ]
 }
@@ -93,7 +94,7 @@ const print = function print(tabArray, extra) {
         JSON.parse
     )(tabArray)
     const cover = frontPage(extra)
-    const last = signature()
+    const last = signature(extra)
 
     return {
         styles: styles,
@@ -117,7 +118,8 @@ const createDoc = function (request) {
         lookUps: request.jsonLookUp,
         cnCode: request.cnCode,
         dateFinished: request.dateFinished,
-        callData: callData
+        callData: callData,
+        language: callData.tab1.uiLanguage
     }
 
     const definition = print(tabArray, extra)
