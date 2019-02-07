@@ -56,6 +56,7 @@ var specialMerge = R.curry(function specialMerge(callData, metadata) {
         GenericCheckpoints_qCategory74_c204: [ratio]
         , GenericCheckpoints_qCategory74_c204_p2061: [ratio]
         , GenericCheckpoints_qCategory74_c204_p2073: [ratio]
+        , GenericCheckpoints_qCategory74_c204_p2125: [ratio]
         // , GenericCheckpoints_qCategoryPreLast_c204: [attachmentInfo]
         , GenericCheckpoints_qCategory81_c204: [expenseType] //, budgetRules]
         , GenericCheckpoints_qCategory411_c204: [onOffType]

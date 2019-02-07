@@ -1,1 +1,0 @@
-convert file1 file2 file3 ... -resize xheight (pixels e.g 200) +append output_file
