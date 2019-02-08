@@ -5,7 +5,7 @@ const T = require('./translation')
 
 const string2num = str => 1 * str.replace(/\./g, '').replace(/,/g, '.')
 const checkbox = function (el, dataSet, extra) {
-    if (dataSet && dataSet[el.name] == 'true') {
+    if (dataSet && (dataSet[el.name] == 'True' || dataSet[el.name] == 'true')) {
         return T.getTranslation(extra.language, 'NAI')
     } else {
         return T.getTranslation(extra.language, 'ΟΧΙ')
