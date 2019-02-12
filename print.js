@@ -69,7 +69,7 @@ const frontPage = function (extra) {
         , {text: `${T.getTranslation(extra.language, generalInfo.title2 || '')}`, style: 'cover'}
         , {text: `${T.getTranslation(extra.language, generalInfo.title3 || '')}`, style: 'cover'}
         , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
-        , {text: `${extra.docType}`, style: 'coverBold'}
+        , {text: `${T.getTranslation(extra.language, extra.docType)}`, style: 'coverBold'}
         , {text: `${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, style: 'cover'}
         , contractor.length > 0 ? {text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover'} : ''
         , imageObject
