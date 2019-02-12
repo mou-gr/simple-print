@@ -65,9 +65,9 @@ const frontPage = function (extra) {
     return [
         // {text: `${activity.docType}`, style: 'coverHeader'}
         headerObject
-        , {text: `${generalInfo.title1 || ''}`, style: 'cover'}
-        , {text: `${generalInfo.title2 || ''}`, style: 'cover'}
-        , {text: `${generalInfo.title3 || ''}`, style: 'cover'}
+        , {text: `${T.getTranslation(extra.language, generalInfo.title1 || '')}`, style: 'cover'}
+        , {text: `${T.getTranslation(extra.language, generalInfo.title2 || '')}`, style: 'cover'}
+        , {text: `${T.getTranslation(extra.language, generalInfo.title3 || '')}`, style: 'cover'}
         , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
         , {text: `${extra.docType}`, style: 'coverBold'}
         , {text: `${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, style: 'cover'}
