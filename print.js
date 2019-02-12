@@ -52,12 +52,14 @@ const frontPage = function (extra) {
     if ( oldFs.existsSync(`logos/${generalInfo.logo}`) ) {
         imageObject = {image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [550, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
     } else {
-        imageObject = {text: `logos/${generalInfo.logo}`, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
+//        imageObject = {text: `logos/${generalInfo.logo}`, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
+        imageObject = {text: '', pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
     }
     if ( oldFs.existsSync(`logos/${generalInfo.headerLogo}`) ) {
         headerObject = {image: `logos/${generalInfo.headerLogo}`, fit: [550, 80], alignment: 'center', style: 'logo'}
     } else {
-        headerObject = {text: `logos/${generalInfo.headerLogo}`, style: 'logo'}
+        // headerObject = {text: `logos/${generalInfo.headerLogo}`, style: 'logo'}
+        headerObject = {text: '', style: 'logo'}
     }
 
     const contractor = extra.contractors || []
@@ -87,9 +89,9 @@ const print = function print(tabArray, extra) {
     const content = R.pipe(
         R.map(a => printTab(extra, a)),
         JSON.stringify,
-        str => str.replace(/{{rank}}/g, () => {
+        str => str.replace(/{{rank}}./g, () => {
             counter += 1
-            return counter
+            return extra.language != 'Αγγλικά' ? `${counter}.` : ''
         }),
         JSON.parse
     )(tabArray)
