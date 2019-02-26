@@ -47,11 +47,11 @@ const select = function (el, dataSet) {
 }
 
 const getData = function (extra, row, column) {
-    const otherwise = (row, column) =>  R.cond([
+    const otherwise = (row, column) => R.cond([
         [val => typeof val == 'object', R.always(' ')],
-        [R.isNil,                       R.always(' ')],
-        [R.isEmpty,                     R.always(' ')],
-        [R.T,                           R.identity]  //always true 
+        [R.isNil, R.always(' ')],
+        [R.isEmpty, R.always(' ')],
+        [R.T, R.identity]  //always true 
     ])(R.path([column.name], row))
 
     const readers = {
@@ -83,11 +83,11 @@ const currency = s => currencyFormatter.format(s, {
 })
 // const currency = s => typeof s === 'string' ? s.replace('.', ',') : s.toFixed(2).replace('.', ',')
 
-const withStyle = R.curry((s, t) => ({style: s, text: t}))
+const withStyle = R.curry((s, t) => ({ style: s, text: t }))
 
-const renderHeader = function renderHeader (column) {
+const renderHeader = function renderHeader(column) {
     if (column.header.length === 1) {
-        return [{style:'headerRow', text: strip(column.header[0].lab || ' '), colSpan: 2, alignment: 'center'}, ' ']
+        return [{ style: 'headerRow', text: strip(column.header[0].lab || ' '), colSpan: 2, alignment: 'center' }, ' ']
     }
 
     return [
@@ -96,7 +96,7 @@ const renderHeader = function renderHeader (column) {
             margin: [-5, -3],
             table: {
                 widths: R.map(() => '*', R.tail(column.header)),
-                body: [ R.map(a => withStyle('headerRow', a.lab))(R.tail(column.header)) ]
+                body: [R.map(a => withStyle('headerRow', a.lab))(R.tail(column.header))]
             }
         }
     ]
@@ -105,12 +105,12 @@ const renderHeader = function renderHeader (column) {
 const mergeWithPrev = function (acc, value) {
     if (value[2] != '1') { return R.append(R.slice(0, 2, value), acc) } // no merge needed, just remove the inline flag
     const lastRow = R.last(acc)
-    if (typeof(lastRow[1]) === 'string') { //merge with normal cell (not already merged)
+    if (typeof (lastRow[1]) === 'string') { //merge with normal cell (not already merged)
         lastRow[1] = {
             margin: [-5, -3, -5, -4],
             table: {
                 widths: ['*', '*'],
-                body: [[ lastRow[1], value[1] ]]
+                body: [[lastRow[1], value[1]]]
             }
         }
     } else { // merge with already merged cell
@@ -122,7 +122,7 @@ const mergeWithPrev = function (acc, value) {
 
 const renderLabel = label => withStyle('label', label && label != '' ? strip(label) : ' ')
 
-const renderCell = R.curry(function renderCell(extra, row, column){
+const renderCell = R.curry(function renderCell(extra, row, column) {
     if (column['no-print'] == '1') { return [] }
     if (column['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return [] }
     const value = getData(extra, row, column)
@@ -132,7 +132,8 @@ const renderCell = R.curry(function renderCell(extra, row, column){
     return cell
 })
 
-const renderRow = R.curry(function renderRow (extra, columns, row) {
+const renderRow = R.curry(function renderRow(extra, columns, row) {
+
     const rows = R.unnest(R.map(renderCell(extra, row), columns))
     const body = R.reduce(mergeWithPrev, [], rows) // merge inline fields
     return [{
@@ -145,7 +146,7 @@ const renderRow = R.curry(function renderRow (extra, columns, row) {
     ]
 })
 
-const budgetSummary = function budgetSummary (dataSet, extra) {
+const budgetSummary = function budgetSummary(dataSet, extra) {
 
     const getExpenses = function (dataSet) {
         const sumProp = prop => R.pipe(
@@ -174,7 +175,7 @@ const budgetSummary = function budgetSummary (dataSet, extra) {
     const budgetAnalysis = R.map(getExpenseCategory(dataSet), expenseCategories)
 
     return [
-        {style: 'h1', text: `{{rank}}. ${T.getTranslation(extra.language, 'ΣΥΓΚΕΝΤΡΩΤΙΚΟΣ ΠΙΝΑΚΑΣ ΔΑΠΑΝΩΝ')}`},
+        { style: 'h1', text: `{{rank}}. ${T.getTranslation(extra.language, 'ΣΥΓΚΕΝΤΡΩΤΙΚΟΣ ΠΙΝΑΚΑΣ ΔΑΠΑΝΩΝ')}` },
         {
             table: {
                 widths: ['*', 80, 80, 80, 80],
@@ -184,7 +185,43 @@ const budgetSummary = function budgetSummary (dataSet, extra) {
                     [T.getTranslation(extra.language, 'Συνολικά'), ...total.map(currency)]
                 ]
             }
-        }, ' ']
+        },
+        ' ']
+}
+const budgetOverview = function (dataSet, extra) {
+    const columns = ['totalBudget', 'eligibleBudget', 'aidIntensity', 'publicExpenditure', 'totalBudgetFromVouchers', 'eligibleBudgetFromVouchers', 'aidIntensityFromVouchers', 'publicExpenditureFromVouchers']
+
+
+    const budgetAnalysis = dataSet.map(el => [
+        el.expenseCategory,
+        ...columns.map(col => el[col]).map(string2num).map(currency)
+    ])
+
+    const total = columns.map(col => {
+        if (['aidIntensity', 'aidIntensityFromVouchers'].includes(col)) { return ' ' }
+        return R.pipe(
+            R.pluck(col),
+            R.map(string2num),
+            R.sum,
+            currency
+        )(dataSet)
+    })
+
+    return [
+        { style: 'h1', text: `{{rank}}. ${T.getTranslation(extra.language, 'Έλεγχος δαπανών βάσει Ισχύοντος Τεχνικού Παραρτήματος - Συγκεντρωτικά')}` },
+        {
+            table: {
+                widths: ['*', 50, 50, 50, 50, 50, 50, 50, 50],
+                body: [
+                    [' ', { text: 'Προϋπολογισμός Βάσει Ένταξης', style: 'headerRow', colSpan: 4 }, {}, {}, {}, { text: 'Προϋπολογισμός Βάσει Παραστατικών', style: 'headerRow', colSpan: 4 }, {}, {}, {}],
+                    ['Κατηγορία Δαπάνης', 'Συνολικό (€)', 'Επιλέξιμο (€)', 'Ποσοστό Δημόσιας Δαπάνης (%)', 'Δημόσια Δαπάνη (€)', 'Συνολικό (€)', 'Επιλέξιμο (€)', 'Ποσοστό Δημόσιας Δαπάνης (%)', 'Δημόσια Δαπάνη (€)'].map(withStyle('headerRow')),
+                    ...budgetAnalysis,
+                    ['Συνολικά', ...total].map(withStyle('sumRow'))
+                ]
+            }
+        },
+        ' ',
+    ]
 }
 
 const registerContractor = (dataSet, extra) => {
@@ -193,31 +230,36 @@ const registerContractor = (dataSet, extra) => {
 }
 
 const afterRender = {
+    ExpenseCategoriesBudget_qSingle_c204: budgetOverview,
     GenericCheckpoints_qCategory81_c204: budgetSummary,
     ModificationContractor_qMulti_c204: registerContractor,
-    ModificationContractor_qMulti_c204_p2177: registerContractor, 
-    ModificationContractor_qMulti_c204_p2129: registerContractor, 
-    ModificationContractor_qMulti_c204_p2131: registerContractor, 
-    ModificationContractor_qMulti_c204_p2178: registerContractor, 
-    ModificationContractor_qMulti_c204_p2179: registerContractor, 
+    ModificationContractor_qMulti_c204_p2177: registerContractor,
+    ModificationContractor_qMulti_c204_p2129: registerContractor,
+    ModificationContractor_qMulti_c204_p2131: registerContractor,
+    ModificationContractor_qMulti_c204_p2178: registerContractor,
+    ModificationContractor_qMulti_c204_p2179: registerContractor,
     ModificationContractor_qMulti_c204_p2351: registerContractor
 }
 
-const renderSection = function renderSection (metaData, data, extra) {
+const renderSection = function renderSection(metaData, data, extra) {
     if (metaData.columns.length <= 0) { return '' }
     if (metaData['no-print'] == '1') { return '' }
     if (metaData['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return '' }
 
-    const title = {style: 'h1', text: '{{rank}}. ' + metaData.title}
-    const body = data.length == 0 ? ['-----------------'] //empty dataSet
-        : R.map(renderRow(extra, metaData.columns), data)
+    const appendOnly = ['ExpenseCategoriesBudget_qSingle_c204'].includes(metaData.customise)
 
     const append = data.length > 0 && typeof afterRender[metaData.customise] == 'function' ? afterRender[metaData.customise](data, extra) : ''
+
+    if (appendOnly) { return [append] }
+
+    const title = { style: 'h1', text: '{{rank}}. ' + metaData.title }
+    const body = data.length == 0 ? ['-----------------'] //empty dataSet
+        : R.map(renderRow(extra, metaData.columns), data)
 
     return [title, ...body, append]
 }
 
-const samisDataTable = function samisDataTable (metaData, data, extra) {
+const samisDataTable = function samisDataTable(metaData, data, extra) {
 
     const columns = R.pipe(
         R.filter(column => column.view !== '' || column.edit !== ''),
@@ -228,7 +270,7 @@ const samisDataTable = function samisDataTable (metaData, data, extra) {
 
     return renderSection(metaData, data, extra)
 }
-const raw = function raw (metadata, data, extra) {
+const raw = function raw(metadata, data, extra) {
     return data
 }
 const printers = {
@@ -238,9 +280,9 @@ const printers = {
 
 //gets a dataSet description from wizard section, calls the corresponding function from the printers array
 const renderDataSet = function renderDataSet(metadata, data, extra, type) {
-    if (typeof(printers[type]) !== 'function') return ''
+    if (typeof (printers[type]) !== 'function') return ''
 
     return printers[type](metadata, data, extra)
 }
 
-module.exports = {renderDataSet}
+module.exports = { renderDataSet }

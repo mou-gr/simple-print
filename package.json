@@ -19,7 +19,8 @@
     "fs": "0.0.1-security",
     "get-stdin": "^6.0.0",
     "minimist": "^1.2.0",
-    "pdfmake": "^0.1.31",
+    "pdfkit": "^0.9.0",
+    "pdfmake": "^0.1.53",
     "ramda": "^0.24.1"
   },
   "devDependencies": {},
