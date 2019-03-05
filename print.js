@@ -91,7 +91,7 @@ const print = function print(tabArray, extra) {
         JSON.stringify,
         str => str.replace(/{{rank}}./g, () => {
             counter += 1
-            return extra.language != 'Αγγλικά' ? `${counter}.` : ''
+            return `${counter}.`
         }),
         JSON.parse
     )(tabArray)

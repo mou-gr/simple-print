@@ -81,7 +81,16 @@ const currency = s => currencyFormatter.format(s, {
     precision: 2,
     format: '%v' // %s is the symbol and %v is the value
 })
+// const num2string = currency
 // const currency = s => typeof s === 'string' ? s.replace('.', ',') : s.toFixed(2).replace('.', ',')
+global.num2string = function num2string(num) {
+    return num.toFixed(2).replace('.', ',')
+}
+global.num2stringLocale = currency
+
+global.defaultTo = function defaultTo(def, val) {
+    return (val == null ? def : val)
+} 
 
 const withStyle = R.curry((s, t) => ({ style: s, text: t }))
 
@@ -122,9 +131,37 @@ const mergeWithPrev = function (acc, value) {
 
 const renderLabel = label => withStyle('label', label && label != '' ? strip(label) : ' ')
 
+const jsonGrid = function jsonGrid(row, column) {
+    const data = JSON.parse(row.PurchaseVoucherDetails_Grid)
+    const readTrasformation = new Function('row', column.readTransformation.join(''))
+
+    const dataGrid = data.map(readTrasformation)
+    column.columnTypes.forEach((t, index) => {
+        if (t.type != 'checkbox') { return }
+        dataGrid.forEach((d, i, arr) => {
+            return arr[i][index] = d[index] == 1 ? 'Ναι' : 'Όχι'
+        })
+    })
+
+    return [
+        renderHeader({ header: [{ lab: column.label }] }),
+        [{
+            table: {
+                body: [
+                    column.columnHeaders,
+                    ...dataGrid
+                ]
+            },
+            colSpan: 2
+        }]
+    ]
+}
+
+
 const renderCell = R.curry(function renderCell(extra, row, column) {
     if (column['no-print'] == '1') { return [] }
     if (column['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return [] }
+    if (column.etype == 'jsonGrid') { return jsonGrid(row, column) }
     const value = getData(extra, row, column)
     var cell = []
     column.header && column.header != '' && cell.push(renderHeader(column))
@@ -285,4 +322,4 @@ const renderDataSet = function renderDataSet(metadata, data, extra, type) {
     return printers[type](metadata, data, extra)
 }
 
-module.exports = { renderDataSet }
+module.exports = { renderDataSet, num2string }
