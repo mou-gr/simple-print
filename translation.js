@@ -4,6 +4,7 @@ const messages = {
     'Αγγλικά': {
         'ΝΑΙ': 'YES',
         'ΌΧΙ': 'NO',
+        'ΟΧΙ': 'NO',
         'ΣΥΓΚΕΝΤΡΩΤΙΚΟΣ ΠΙΝΑΚΑΣ ΔΑΠΑΝΩΝ': 'TOTALS EXPENSE TABLE',
         'Κατηγορία Δαπάνης': 'Expense Category',
         'Συνολικό Κόστος(€)': 'Total Budget(€)',
@@ -11,7 +12,7 @@ const messages = {
         'Επιλέξιμο Κόστος(€)': 'Eligible Budget(€)',
         'Δημόσια Δαπάνη (€)': 'Public Expenditure(€)',
         'Συνολικά': 'Total',
-        'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης': 'Co-Funded by Greece and the EU',
+        'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης': 'Co-funded by the European Union (ERDF) and National Funds',
         'Κωδικός πράξης': 'Code',
         'Ημερομηνία Οριστικοποίησης': 'Finalisation Date',
         'σελ.': 'page',
