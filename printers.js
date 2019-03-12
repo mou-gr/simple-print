@@ -90,7 +90,7 @@ global.num2stringLocale = currency
 
 global.defaultTo = function defaultTo(def, val) {
     return (val == null ? def : val)
-} 
+}
 
 const withStyle = R.curry((s, t) => ({ style: s, text: t }))
 
@@ -132,24 +132,23 @@ const mergeWithPrev = function (acc, value) {
 const renderLabel = label => withStyle('label', label && label != '' ? strip(label) : ' ')
 
 const jsonGrid = function jsonGrid(row, column) {
-    const data = JSON.parse(row.PurchaseVoucherDetails_Grid)
+    const grid = row.PurchaseVoucherDetails_Grid || row.PaymentVoucherDetails_Grid
+    const data = JSON.parse(grid)
     const readTrasformation = new Function('row', column.readTransformation.join(''))
 
     const dataGrid = data.map(readTrasformation)
-    column.columnTypes.forEach((t, index) => {
-        if (t.type != 'checkbox') { return }
-        dataGrid.forEach((d, i, arr) => {
-            return arr[i][index] = d[index] == 1 ? 'Ναι' : 'Όχι'
-        })
-    })
+    const parsedGrid = dataGrid.map(row => R.zipWith((def, col) => {
+        if (def.type != 'checkbox') { return col }
+        return col == 1 ? 'Ναι' : 'Όχι'
+    }, column.columnTypes, row))
 
     return [
         renderHeader({ header: [{ lab: column.label }] }),
         [{
             table: {
                 body: [
-                    column.columnHeaders,
-                    ...dataGrid
+                    column.columnHeaders.map(h => h.replace(/<br>/g, ' ')),
+                    ...parsedGrid
                 ]
             },
             colSpan: 2
