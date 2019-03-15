@@ -137,10 +137,15 @@ const jsonGrid = function jsonGrid(row, column) {
     const readTrasformation = new Function('row', column.readTransformation.join(''))
 
     const dataGrid = data.map(readTrasformation)
-    const parsedGrid = dataGrid.map(row => R.zipWith((def, col) => {
-        if (def.type != 'checkbox') { return col }
-        return col == 1 ? 'Ναι' : 'Όχι'
-    }, column.columnTypes, row))
+    const parsedGrid = dataGrid.map(row => {
+        var deleteRow = false
+        const retValue = R.zipWith((def, col) => {
+            if (def.type != 'checkbox') { return col }
+            deleteRow = col != 1
+            return col == 1 ? 'Ναι' : 'Όχι'
+        }, column.columnTypes, row)
+        return deleteRow ? undefined : retValue
+    }).filter(r => r !== undefined)
 
     return [
         renderHeader({ header: [{ lab: column.label }] }),
