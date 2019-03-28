@@ -61,6 +61,10 @@ var specialMerge = R.curry(function specialMerge(callData, metadata) {
         , GenericCheckpoints_qCategory81_c204: [expenseType] //, budgetRules]
         , GenericCheckpoints_qCategory411_c204: [onOffType]
         , GenericCheckpoints_qCategory412_c204: [criterionType] //, evaluation]
+        , GenericCheckpoints_qCategory411_c204_p2073: [onOffType] //, evaluation]
+        , GenericCheckpoints_qCategory412_c204_p2073: [criterionType] //, evaluation]
+        , GenericCheckpoints_qCategory411_c204_p2125: [onOffType] //, evaluation]
+        , GenericCheckpoints_qCategory412_c204_p2125: [criterionType] //, evaluation]
     }
 
     var transformationChain = transformationArray[metadata.customise] || []
