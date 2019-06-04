@@ -293,7 +293,7 @@ const renderSection = function renderSection(metaData, data, extra) {
 
     if (appendOnly) { return [append] }
 
-    const title = { style: 'h1', text: '{{rank}}. ' + metaData.title }
+    const title = { style: 'h1', text: '{{rank}}. ' + (metaData['print-title'] || metaData.title) }
     const body = data.length == 0 ? ['-----------------'] //empty dataSet
         : R.map(renderRow(extra, metaData.columns), data)
 
