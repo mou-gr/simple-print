@@ -68,7 +68,11 @@ var specialMerge = R.curry(function specialMerge(callData, metadata) {
     }
 
     var transformationChain = transformationArray[metadata.customise] || []
-    transformationChain.push(mergeCompiledData)
+    transformationChain.push(mergeCompiledData(metadata.customise));
+
+    (metadata.extraCustomise || []).map(function (customiser) {
+        transformationChain.push(mergeCompiledData(customiser))
+    })
 
     //call each function in transformationChain and transform metadata sequentially
     return transformationChain.reduce(function (res, transformation) {
@@ -115,9 +119,10 @@ const merge = function merge (weak, strong) {
 
     return merged
 }
-const mergeCompiledData = function (metaData, callData) {
-    //const compiled = JSON.parse(callData.compiled)
-    return merge(metaData, callData.compiled[metaData.customise])
+const mergeCompiledData = function (mergeWith) {
+    return function (metaData, callData) {
+        return merge(metaData, callData.compiled[mergeWith])
+    }
 }
 
 module.exports = {specialMerge}
