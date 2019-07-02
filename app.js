@@ -5,12 +5,7 @@ const pdf = require('./print')
 const fs = require('fs')
 const R = require('ramda')
 const requestStats = require('request-stats')
-const stats = requestStats(server)
 
-stats.on('complete', function (details) {
-    const size = details.req.bytes
-    console.log(size)
-})
 
 const logResponseTime = function logResponseTime(req, res, next) {
     const startHrTime = process.hrtime()
@@ -64,6 +59,13 @@ app.post('/close', function () {
     }, 4000)
 })
 var server = http.createServer(app)
+
+requestStats(server, function (stats) {
+    // this function will be called every time a request to the server completes
+    console.log(stats.req.bytes / 1000 + ' Kbytes')
+})
+
+
 var port = process.env.PORT || 2001
 server.listen(port)
 
