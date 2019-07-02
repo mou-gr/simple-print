@@ -21,7 +21,8 @@
     "minimist": "^1.2.0",
     "pdfkit": "^0.9.0",
     "pdfmake": "^0.1.53",
-    "ramda": "^0.24.1"
+    "ramda": "^0.24.1",
+    "request-stats": "^3.0.0"
   },
   "devDependencies": {},
   "repository": {

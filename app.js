@@ -4,6 +4,13 @@ var bodyParser = require('body-parser')
 const pdf = require('./print')
 const fs = require('fs')
 const R = require('ramda')
+const requestStats = require('request-stats')
+const stats = requestStats(server)
+
+stats.on('complete', function (details) {
+    const size = details.req.bytes
+    console.log(size)
+})
 
 const logResponseTime = function logResponseTime(req, res, next) {
     const startHrTime = process.hrtime()
