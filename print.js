@@ -106,15 +106,15 @@ const print = function print(tabArray, extra) {
     }
 } 
 const createDoc = function (request) {
-    const callData = JSON.parse(request.invitationJson)
-    const compiled = JSON.parse(callData.compiled || '{}')
-    callData.compiled = compiled
+    const callData = request.invitationJson
+    // const compiled = JSON.parse(callData.compiled || '{}')
+    // callData.compiled = compiled
     //if following params exisit in the request overwrite relevant callData fields
     ; ['logo', 'headerLogo', 'TITLOS_PROSKLHSHS', 'title1', 'title2', 'title3'].map(a =>
         request[a] && (callData.tab1[a] = request[a])
     )
     request.logo && (callData.tab1.logo = request.logo)
-    const tabArray = JSON.parse(request.tabArray)
+    const tabArray = request.tabArray
     var extra = {
         docType: request.type,
         lookUps: request.jsonLookUp,

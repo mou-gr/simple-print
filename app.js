@@ -4,8 +4,6 @@ var bodyParser = require('body-parser')
 const pdf = require('./print')
 const fs = require('fs')
 const R = require('ramda')
-const requestStats = require('request-stats')
-
 
 const logResponseTime = function logResponseTime(req, res, next) {
     const startHrTime = process.hrtime()
@@ -18,7 +16,9 @@ const logResponseTime = function logResponseTime(req, res, next) {
 }
 
 var app = express()
+
 app.use(logResponseTime)
+app.use(bodyParser.json({ limit: '500mb' }))
 
 const jsonLookUpFolder = './jsonLookUp/'
 
@@ -35,11 +35,6 @@ const jsonDir = function (dirName) {
 
 const jsonLookUp = jsonDir(jsonLookUpFolder)
 
-app.use(bodyParser.json({ limit: '100mb' }))
-app.use(bodyParser.urlencoded({
-    extended: true,
-    limit: '100mb'
-}))
 
 app.post('/pdf', function (req, res) {
     req.body.jsonLookUp = jsonLookUp
@@ -47,6 +42,22 @@ app.post('/pdf', function (req, res) {
     res.contentType('application/pdf')
     binary.pipe(res)
 })
+
+// app.post('/pdf', function(request, respond) {
+//     var body = '';
+//     var filePath = __dirname + '/data.txt';
+//     request.on('data', function(data) {
+//         body += data;
+//     });
+
+//     request.on('end', function (){
+//         fs.writeFile(filePath, body, function() {
+//             respond.end();
+//             console.log('ok')
+//         });
+//     });
+// });
+
 app.post('/close', function () {
     console.log('stop accepting connections')
     server.close(function () {
@@ -58,13 +69,8 @@ app.post('/close', function () {
         process.exit(2)
     }, 4000)
 })
+
 var server = http.createServer(app)
-
-requestStats(server, function (stats) {
-    // this function will be called every time a request to the server completes
-    console.log(stats.req.bytes / 1000 + ' Kbytes')
-})
-
 
 var port = process.env.PORT || 2001
 server.listen(port)
