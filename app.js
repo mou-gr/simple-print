@@ -17,9 +17,6 @@ const logResponseTime = function logResponseTime(req, res, next) {
 
 var app = express()
 
-app.use(logResponseTime)
-app.use(bodyParser.json({ limit: '500mb' }))
-
 const jsonLookUpFolder = './jsonLookUp/'
 
 const jsonDir = function (dirName) {
@@ -35,6 +32,8 @@ const jsonDir = function (dirName) {
 
 const jsonLookUp = jsonDir(jsonLookUpFolder)
 
+app.use(logResponseTime)
+app.use(bodyParser.json({ limit: '500mb' }))
 
 app.post('/pdf', function (req, res) {
     req.body.jsonLookUp = jsonLookUp
@@ -44,19 +43,19 @@ app.post('/pdf', function (req, res) {
 })
 
 // app.post('/pdf', function(request, respond) {
-//     var body = '';
-//     var filePath = __dirname + '/data.txt';
+//     var body = ''
+//     var filePath = __dirname + '/data.txt'
 //     request.on('data', function(data) {
-//         body += data;
-//     });
+//         body += data
+//     })
 
 //     request.on('end', function (){
 //         fs.writeFile(filePath, body, function() {
-//             respond.end();
+//             respond.end()
 //             console.log('ok')
-//         });
-//     });
-// });
+//         })
+//     })
+// })
 
 app.post('/close', function () {
     console.log('stop accepting connections')

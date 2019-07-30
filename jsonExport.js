@@ -57,6 +57,8 @@ var specialMerge = R.curry(function specialMerge(callData, metadata) {
         , GenericCheckpoints_qCategory74_c204_p2061: [ratio]
         , GenericCheckpoints_qCategory74_c204_p2073: [ratio]
         , GenericCheckpoints_qCategory74_c204_p2125: [ratio]
+        , GenericCheckpoints_qCategory74_c204_p2178: [ratio]
+        , GenericCheckpoints_qCategory74_c204_p2179: [ratio]
         // , GenericCheckpoints_qCategoryPreLast_c204: [attachmentInfo]
         , GenericCheckpoints_qCategory81_c204: [expenseType] //, budgetRules]
         , GenericCheckpoints_qCategory411_c204: [onOffType]
@@ -100,7 +102,7 @@ const merge = function merge (weak, strong) {
         weak.columns = cols
         return weak
     }
-    // if hiddenColumns hide all weakColumns
+    // if hiddenColumns, hide all weakColumns
     // exclude from hiding the columns that are in showColumns
     // exclude from hiding the columns that are explicitly declared
     // default to [] when columns undefined

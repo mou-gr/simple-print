@@ -31,35 +31,35 @@ const footer = R.curry(function (extra, page, pages) {
     } : {
         columns: [
             [`${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, `${T.getTranslation(extra.language, 'Ημερομηνία Οριστικοποίησης')}: ${T.getTranslation(extra.language, printDate(extra.dateFinished))}`],
-            { text: `${T.getTranslation(extra.language, 'σελ.')} ${page} ${T.getTranslation(extra.language, 'από')} ${pages}`, alignment: 'right' } ],
+            { text: `${T.getTranslation(extra.language, 'σελ.')} ${page} ${T.getTranslation(extra.language, 'από')} ${pages}`, alignment: 'right' }],
         margin: [40, 10, 40, 0]
     }
 })
 const signature = function (extra) {
     return [
-        {text: `${T.getTranslation(extra.language, 'Ημερομηνία')} :`, style: 'signature'}
-        , {text: `${T.getTranslation(extra.language, 'Υπογραφή')}`, style: 'signature'}
+        { text: `${T.getTranslation(extra.language, 'Ημερομηνία')} :`, style: 'signature' }
+        , { text: `${T.getTranslation(extra.language, 'Υπογραφή')}`, style: 'signature' }
         , ' '
         , ' '
         , ' '
         , ' '
-        , {text: `${T.getTranslation(extra.language, 'Σφραγίδα')}`, style: 'signature'}
+        , { text: `${T.getTranslation(extra.language, 'Σφραγίδα')}`, style: 'signature' }
     ]
 }
 const frontPage = function (extra) {
     const generalInfo = extra.callData.tab1
     var imageObject, headerObject
-    if ( oldFs.existsSync(`logos/${generalInfo.logo}`) ) {
-        imageObject = {image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [550, 80], absolutePosition: {x: 40, y: 700}, style: 'logo'}
+    if (oldFs.existsSync(`logos/${generalInfo.logo}`)) {
+        imageObject = { image: `logos/${generalInfo.logo}`, pageBreak: 'after', fit: [550, 80], absolutePosition: { x: 40, y: 700 }, style: 'logo' }
     } else {
-//        imageObject = {text: `logos/${generalInfo.logo}`, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
-        imageObject = {text: '', pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
+        //        imageObject = {text: `logos/${generalInfo.logo}`, pageBreak: 'after', absolutePosition: {x: 40, y: 750}, style: 'logo'}
+        imageObject = { text: '', pageBreak: 'after', absolutePosition: { x: 40, y: 750 }, style: 'logo' }
     }
-    if ( oldFs.existsSync(`logos/${generalInfo.headerLogo}`) ) {
-        headerObject = {image: `logos/${generalInfo.headerLogo}`, fit: [550, 80], alignment: 'center', style: 'logo'}
+    if (oldFs.existsSync(`logos/${generalInfo.headerLogo}`)) {
+        headerObject = { image: `logos/${generalInfo.headerLogo}`, fit: [550, 80], alignment: 'center', style: 'logo' }
     } else {
         // headerObject = {text: `logos/${generalInfo.headerLogo}`, style: 'logo'}
-        headerObject = {text: '', style: 'logo'}
+        headerObject = { text: '', style: 'logo' }
     }
 
     const contractor = extra.contractors || []
@@ -67,21 +67,21 @@ const frontPage = function (extra) {
     return [
         // {text: `${activity.docType}`, style: 'coverHeader'}
         headerObject
-        , {text: `${T.getTranslation(extra.language, generalInfo.title1 || '')}`, style: 'cover'}
-        , {text: `${T.getTranslation(extra.language, generalInfo.title2 || '')}`, style: 'cover'}
-        , {text: `${T.getTranslation(extra.language, generalInfo.title3 || '')}`, style: 'cover'}
-        , {text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover'}
-        , {text: `${T.getTranslation(extra.language, extra.docType)}`, style: 'coverBold'}
-        , {text: `${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, style: 'cover'}
-        , contractor.length > 0 ? {text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover'} : ''
+        , { text: `${T.getTranslation(extra.language, generalInfo.title1 || '')}`, style: 'cover' }
+        , { text: `${T.getTranslation(extra.language, generalInfo.title2 || '')}`, style: 'cover' }
+        , { text: `${T.getTranslation(extra.language, generalInfo.title3 || '')}`, style: 'cover' }
+        , { text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover' }
+        , { text: `${T.getTranslation(extra.language, extra.docType)}`, style: 'coverBold' }
+        , { text: `${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, style: 'cover' }
+        , contractor.length > 0 ? { text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover' } : ''
         , imageObject
     ]
 }
 const printTab = function printTab(extra, tab) {
     const metadata = jsonExport.specialMerge(extra.callData, JSON.parse(tab.metadata || '{}'))
     const dataString = tab.data || '[]'
-    const data = JSON.parse(dataString.replace(/(\r\n|\n|\r|\t)/gm,' '))
-    
+    const data = JSON.parse(dataString.replace(/(\r\n|\n|\r|\t)/gm, ' '))
+
     return printers.renderDataSet(metadata, data, extra, tab.type)
 }
 const print = function print(tabArray, extra) {
@@ -104,13 +104,13 @@ const print = function print(tabArray, extra) {
         content: [cover, ...content, ...last],
         footer: footer(extra)
     }
-} 
+}
 const createDoc = function (request) {
     const callData = request.invitationJson
-    // const compiled = JSON.parse(callData.compiled || '{}')
-    // callData.compiled = compiled
-    //if following params exisit in the request overwrite relevant callData fields
-    ; ['logo', 'headerLogo', 'TITLOS_PROSKLHSHS', 'title1', 'title2', 'title3'].map(a =>
+        // const compiled = JSON.parse(callData.compiled || '{}')
+        // callData.compiled = compiled
+        //if following params exisit in the request overwrite relevant callData fields
+        ;['logo', 'headerLogo', 'TITLOS_PROSKLHSHS', 'title1', 'title2', 'title3'].map(a =>
         request[a] && (callData.tab1[a] = request[a])
     )
     request.logo && (callData.tab1.logo = request.logo)
@@ -183,4 +183,4 @@ const styles = {
     }
 }
 
-module.exports = {createDoc}
+module.exports = { createDoc }
