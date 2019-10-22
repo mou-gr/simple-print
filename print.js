@@ -29,11 +29,11 @@ const footer = R.curry(function (extra, page, pages) {
         text: T.getTranslation(extra.language, 'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης'),
         alignment: 'center'
     } : {
-        columns: [
-            [`${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, `${T.getTranslation(extra.language, 'Ημερομηνία Οριστικοποίησης')}: ${T.getTranslation(extra.language, printDate(extra.dateFinished))}`],
-            { text: `${T.getTranslation(extra.language, 'σελ.')} ${page} ${T.getTranslation(extra.language, 'από')} ${pages}`, alignment: 'right' }],
-        margin: [40, 10, 40, 0]
-    }
+            columns: [
+                [`${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, `${T.getTranslation(extra.language, 'Ημερομηνία Οριστικοποίησης')}: ${T.getTranslation(extra.language, printDate(extra.dateFinished))}`],
+                { text: `${T.getTranslation(extra.language, 'σελ.')} ${page} ${T.getTranslation(extra.language, 'από')} ${pages}`, alignment: 'right' }],
+            margin: [40, 10, 40, 0]
+        }
 })
 const signature = function (extra) {
     return [
@@ -107,10 +107,11 @@ const print = function print(tabArray, extra) {
 }
 const createDoc = function (request) {
     const callData = request.invitationJson
-        // const compiled = JSON.parse(callData.compiled || '{}')
-        // callData.compiled = compiled
-        //if following params exisit in the request overwrite relevant callData fields
-        ;['logo', 'headerLogo', 'TITLOS_PROSKLHSHS', 'title1', 'title2', 'title3'].map(a =>
+    callData.tab1 == undefined && (callData.tab1 = {})
+    // const compiled = JSON.parse(callData.compiled || '{}')
+    // callData.compiled = compiled
+    //if following params exisit in the request overwrite relevant callData fields
+    ;['logo', 'headerLogo', 'TITLOS_PROSKLHSHS', 'title1', 'title2', 'title3'].map(a =>
         request[a] && (callData.tab1[a] = request[a])
     )
     request.logo && (callData.tab1.logo = request.logo)
