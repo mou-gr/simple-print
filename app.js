@@ -35,28 +35,16 @@ const jsonLookUp = jsonDir(jsonLookUpFolder)
 app.use(logResponseTime)
 app.use(bodyParser.json({ limit: '500mb' }))
 
+/** basic route that handles print requests*/
 app.post('/pdf', function (req, res) {
-    req.body.jsonLookUp = jsonLookUp
+
+    req.body.jsonLookUp = jsonLookUp //read files for jsonlkp
     var binary = pdf.createDoc(req.body)
     res.contentType('application/pdf')
     binary.pipe(res)
 })
 
-// app.post('/pdf', function(request, respond) {
-//     var body = ''
-//     var filePath = __dirname + '/data.txt'
-//     request.on('data', function(data) {
-//         body += data
-//     })
-
-//     request.on('end', function (){
-//         fs.writeFile(filePath, body, function() {
-//             respond.end()
-//             console.log('ok')
-//         })
-//     })
-// })
-
+/** shutdown server - not required anymore */
 app.post('/close', function () {
     console.log('stop accepting connections')
     server.close(function () {

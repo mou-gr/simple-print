@@ -46,6 +46,10 @@ const select = function (el, dataSet) {
     return R.defaultTo(val)(ret)
 }
 
+/** extracts the data of a given cell
+ * @param {Object} row - the row of the dataset that is being parsed
+ * @param {Object} column - the column definition that will be printed 
+ */
 const getData = function (extra, row, column) {
     const otherwise = (row, column) => R.cond([
         [val => typeof val == 'object', R.always(' ')],
@@ -81,8 +85,8 @@ const currency = s => currencyFormatter.format(s, {
     precision: 2,
     format: '%v' // %s is the symbol and %v is the value
 })
-// const num2string = currency
-// const currency = s => typeof s === 'string' ? s.replace('.', ',') : s.toFixed(2).replace('.', ',')
+
+/**global declaration so they can be used within readTransformation that is read as string from the DB */
 global.num2string = function num2string(num) {
     return num.toFixed(2).replace('.', ',')
 }
@@ -110,7 +114,7 @@ const renderHeader = function renderHeader(column) {
         }
     ]
 }
-
+/**used for merging inline fields. Can merge multiple inline fields */
 const mergeWithPrev = function (acc, value) {
     if (value[2] != '1') { return R.append(R.slice(0, 2, value), acc) } // no merge needed, just remove the inline flag
     const lastRow = R.last(acc)
@@ -131,8 +135,10 @@ const mergeWithPrev = function (acc, value) {
 
 const renderLabel = label => withStyle('label', label && label != '' ? strip(label) : ' ')
 
+/** create special definition for cells of type jsonGrid */
 const jsonGrid = function jsonGrid(row, column) {
-    const grid = row.PurchaseVoucherDetails_Grid || row.PaymentVoucherDetails_Grid
+    const grid = row[column.name]
+    
     const data = JSON.parse(grid)
     const readTrasformation = new Function('row', column.readTransformation.join(''))
 
@@ -161,7 +167,10 @@ const jsonGrid = function jsonGrid(row, column) {
     ]
 }
 
-
+/**create definition for a column of the dataSet
+ * @param {Object} row - the row of the dataSet that is being processed
+ * @param {Object} column - the definition of the column to be printed
+ */
 const renderCell = R.curry(function renderCell(extra, row, column) {
     if (column['no-print'] == '1') { return [] }
     if (column['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return [] }
@@ -173,8 +182,9 @@ const renderCell = R.curry(function renderCell(extra, row, column) {
     return cell
 })
 
+/** Generate pdfmake definition for a row of the dataset*/
 const renderRow = R.curry(function renderRow(extra, columns, row) {
-
+// map each column, take care of inline fields
     const rows = R.unnest(R.map(renderCell(extra, row), columns))
     const body = R.reduce(mergeWithPrev, [], rows) // merge inline fields
     return [{
@@ -187,8 +197,10 @@ const renderRow = R.curry(function renderRow(extra, columns, row) {
     ]
 })
 
+/**After render function for the budget summary */
 const budgetSummary = function budgetSummary(dataSet, extra) {
 
+    /** get the totals from the dataset */
     const getExpenses = function (dataSet) {
         const sumProp = prop => R.pipe(
             R.pluck(prop),
@@ -202,6 +214,11 @@ const budgetSummary = function budgetSummary(dataSet, extra) {
 
         return [total, nonEligible, eligible, publicExpenditure]
     }
+
+    /** Creates definition for each expense category
+     * @param {Array} dataSet - the data to be printed
+     * @param {string} category - the expense category to calculate
+     */
     const getExpenseCategory = R.curry(function (dataSet, category) {
         const categoryLabel = category.title
         const expenses = getExpenses(dataSet.filter(el => el.Comments13 == category.AA))
@@ -213,6 +230,7 @@ const budgetSummary = function budgetSummary(dataSet, extra) {
     const expenseCategories = extra.callData.tab6.KATHGORIES_DAPANON_OBJ.KATHGORIES_DAPANON_LIST
     const total = getExpenses(dataSet, 1)
 
+    //for each expense category as read from callData generate data to be printed
     const budgetAnalysis = R.map(getExpenseCategory(dataSet), expenseCategories)
 
     return [
@@ -229,9 +247,10 @@ const budgetSummary = function budgetSummary(dataSet, extra) {
         },
         ' ']
 }
+
+/**After render function that generates an extra table analyzing expenses */
 const budgetOverview = function (dataSet, extra) {
     const columns = ['totalBudget', 'eligibleBudget', 'aidIntensity', 'publicExpenditure', 'totalBudgetFromVouchers', 'eligibleBudgetFromVouchers', 'aidIntensityFromVouchers', 'publicExpenditureFromVouchers']
-
 
     const budgetAnalysis = dataSet.map(el => [
         el.expenseCategory,
@@ -241,10 +260,10 @@ const budgetOverview = function (dataSet, extra) {
     const total = columns.map(col => {
         if (['aidIntensity', 'aidIntensityFromVouchers'].includes(col)) { return ' ' }
         return R.pipe(
-            R.pluck(col),
-            R.map(string2num),
-            R.sum,
-            currency
+            R.pluck(col), // get an array of all the values of the needed column from the dataSet
+            R.map(string2num), // format them as number
+            R.sum, // add them
+            currency // generate a string with currency format
         )(dataSet)
     })
 
@@ -265,11 +284,16 @@ const budgetOverview = function (dataSet, extra) {
     ]
 }
 
+/** After render function that gets the name of the constructor and appends it to the extra "object"
+ * Used to pass the contractor name to cover, header, footer
+ * Could be simplified if it is passed as request param by the caller
+ */
 const registerContractor = (dataSet, extra) => {
     extra.contractors = R.pluck('P_LegalName', dataSet)
     return ''
 }
 
+// Array of tabs (specified by customise) that will have an extra section appended
 const afterRender = {
     ExpenseCategoriesBudget_qSingle_c204: budgetOverview,
     GenericCheckpoints_qCategory81_c204: budgetSummary,
@@ -282,17 +306,22 @@ const afterRender = {
     ModificationContractor_qMulti_c204_p2351: registerContractor
 }
 
+/**Create pdfmake definition for specified tab */
 const renderSection = function renderSection(metaData, data, extra) {
     if (metaData.columns.length <= 0) { return '' }
     if (metaData['no-print'] == '1') { return '' }
     if (metaData['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return '' }
 
+    // Array of tabs (specified by customise) that will not have the normal definition 
+    // but only the "appended one"
     const appendOnly = ['ExpenseCategoriesBudget_qSingle_c204'].includes(metaData.customise)
 
+    // Array of tabs (specified by customise) that will have an extra section appended
     const append = data.length > 0 && typeof afterRender[metaData.customise] == 'function' ? afterRender[metaData.customise](data, extra) : ''
 
     if (appendOnly) { return [append] }
 
+    // Add title with placeholder for serial number
     const title = { style: 'h1', text: '{{rank}}. ' + (metaData['print-title'] || metaData.title) }
     const body = data.length == 0 ? ['-----------------'] //empty dataSet
         : R.map(renderRow(extra, metaData.columns), data)
@@ -300,10 +329,12 @@ const renderSection = function renderSection(metaData, data, extra) {
     return [title, ...body, append]
 }
 
+/** Generates declaration for a section of samisDataTable type */
 const samisDataTable = function samisDataTable(metaData, data, extra) {
+    //filter, sort columns and then generate definition
 
     const columns = R.pipe(
-        R.filter(column => column.view !== '' || column.edit !== ''),
+        R.filter(column => column.view !== '' || column.edit !== ''), 
         R.filter(column => column.virtual != 1),
         R.sortBy(column => 1 * column.vord || 0)
     )(metaData.columns)
@@ -311,19 +342,24 @@ const samisDataTable = function samisDataTable(metaData, data, extra) {
 
     return renderSection(metaData, data, extra)
 }
+
+/** the data is already compatible with pdfmake and will be sent without modification*/
 const raw = function raw(metadata, data, extra) {
     return data
 }
+
+/** Hashmap of functions to use according to the declared type */
 const printers = {
     samis: samisDataTable,
     raw: raw
 }
 
-//gets a dataSet description from wizard section, calls the corresponding function from the printers array
+/** gets a dataSet description from wizard section, calls the corresponding function from the printers array */
+
 const renderDataSet = function renderDataSet(metadata, data, extra, type) {
     if (typeof (printers[type]) !== 'function') return ''
 
     return printers[type](metadata, data, extra)
 }
 
-module.exports = { renderDataSet, num2string }
+module.exports = { renderDataSet }

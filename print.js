@@ -29,11 +29,11 @@ const footer = R.curry(function (extra, page, pages) {
         text: T.getTranslation(extra.language, 'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης'),
         alignment: 'center'
     } : {
-            columns: [
-                [`${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, `${T.getTranslation(extra.language, 'Ημερομηνία Οριστικοποίησης')}: ${T.getTranslation(extra.language, printDate(extra.dateFinished))}`],
-                { text: `${T.getTranslation(extra.language, 'σελ.')} ${page} ${T.getTranslation(extra.language, 'από')} ${pages}`, alignment: 'right' }],
-            margin: [40, 10, 40, 0]
-        }
+        columns: [
+            [`${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, `${T.getTranslation(extra.language, 'Ημερομηνία Οριστικοποίησης')}: ${T.getTranslation(extra.language, printDate(extra.dateFinished))}`],
+            { text: `${T.getTranslation(extra.language, 'σελ.')} ${page} ${T.getTranslation(extra.language, 'από')} ${pages}`, alignment: 'right' }],
+        margin: [40, 10, 40, 0]
+    }
 })
 const signature = function (extra) {
     return [
@@ -77,18 +77,30 @@ const frontPage = function (extra) {
         , imageObject
     ]
 }
+
+/** get data + metadata for a tab and generate pdfmake declaration
+ * @param {Object} extra - Additional information common to all tabs
+ * @param {Object} tab - tab.data + tab.metadata
+ */
 const printTab = function printTab(extra, tab) {
+    // first merge with invitationData
     const metadata = jsonExport.specialMerge(extra.callData, JSON.parse(tab.metadata || '{}'))
     const dataString = tab.data || '[]'
-    const data = JSON.parse(dataString.replace(/(\r\n|\n|\r|\t)/gm, ' '))
+    const data = JSON.parse(dataString.replace(/(\r\n|\n|\r|\t)/gm, ' ')) // sanitize data
 
     return printers.renderDataSet(metadata, data, extra, tab.type)
 }
+
+/** Get an array of tabs and create pdfmake declaration for it to be printed
+ * @param {Array} tabArray - List of tabs to be printed
+ * @param {Object} extra - Additional information for printing (jsonLookups, invitationData, ...)
+ */
 const print = function print(tabArray, extra) {
-    var counter = 0
+
+    var counter = 0 //counter to be used for generating tabs order
     const content = R.pipe(
-        R.map(a => printTab(extra, a)),
-        JSON.stringify,
+        R.map(a => printTab(extra, a)), // generate definition for each tab
+        JSON.stringify, //replace {{rank}} with sequential numbers for each sectio 
         str => str.replace(/{{rank}}./g, () => {
             counter += 1
             return extra.language != 'Αγγλικά' ? `${counter}.` : ''
@@ -108,13 +120,12 @@ const print = function print(tabArray, extra) {
 const createDoc = function (request) {
     const callData = request.invitationJson
     callData.tab1 == undefined && (callData.tab1 = {})
-    // const compiled = JSON.parse(callData.compiled || '{}')
-    // callData.compiled = compiled
+
     //if following params exisit in the request overwrite relevant callData fields
     ;['logo', 'headerLogo', 'TITLOS_PROSKLHSHS', 'title1', 'title2', 'title3'].map(a =>
         request[a] && (callData.tab1[a] = request[a])
     )
-    request.logo && (callData.tab1.logo = request.logo)
+    
     const tabArray = request.tabArray
     var extra = {
         docType: request.type,
@@ -125,7 +136,7 @@ const createDoc = function (request) {
         language: callData.tab1.uiLanguage
     }
 
-    const definition = print(tabArray, extra)
+    const definition = print(tabArray, extra) //creates the doc definition compatible with pdfmake
 
     var pdfDoc = printer.createPdfKitDocument(definition)
     pdfDoc.end()
