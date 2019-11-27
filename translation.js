@@ -22,7 +22,8 @@ const messages = {
         'Σφραγίδα': 'Stamp',
         'Δικαιούχος': 'Beneficiary',
         'Μη Οριστικοποιημένη': 'Not Finalised',
-        'Φόρμα Υποβολής': 'Submission Form'
+        'Φόρμα Υποβολής': 'Submission Form',
+        'Αξιολόγηση': 'Evaluation'
     }    
 }
 
