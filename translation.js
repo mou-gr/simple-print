@@ -23,7 +23,7 @@ const messages = {
         'Δικαιούχος': 'Beneficiary',
         'Μη Οριστικοποιημένη': 'Not Finalised',
         'Φόρμα Υποβολής': 'Submission Form',
-        'Αξιολόγηση': 'Evaluation',
+        'Αξιολόγηση': 'First level evaluation',
         'Γνωμοδοτική Επιτροπή':'Joint assessment team'
     }    
 }
