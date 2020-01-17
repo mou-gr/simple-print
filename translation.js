@@ -24,7 +24,7 @@ const messages = {
         'Μη Οριστικοποιημένη': 'Not Finalised',
         'Φόρμα Υποβολής': 'Submission Form',
         'Αξιολόγηση': 'First level evaluation',
-        'Γνωμοδοτική Επιτροπή':'Joint assessment team'
+        'Γνωμοδοτική Επιτροπή':'Second Level Evaluation (Joint Assessment Team)'
     }    
 }
 
