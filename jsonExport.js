@@ -97,11 +97,7 @@ const mergeColumns = function mergeColumns(weak, strong) {
 const merge = function merge (weak, strong) {
     /** merges two sets of metadata. Priority to the latter */
     if (!strong) { return weak }
-    if (strong.hidden == '1') {
-        const cols = R.map(a => ({name: a.name, view: '', edit: ''}))(weak.columns || [])
-        weak.columns = cols
-        return weak
-    }
+
     // if hiddenColumns, hide all weakColumns
     // exclude from hiding the columns that are in showColumns
     // exclude from hiding the columns that are explicitly declared
@@ -122,9 +118,14 @@ const merge = function merge (weak, strong) {
     return merged
 }
 const mergeCompiledData = function (mergeWith) {
-    return function (metaData, callData) {
+    const merged = function (metaData, callData) {
         return merge(metaData, callData.compiled[mergeWith])
     }
+
+    if (merged.hidden == '1') {
+        merged.columns = R.map(a => ({name: a.name, view: '', edit: ''}))(merged.columns || [])
+    }
+    return merged
 }
 
 module.exports = {specialMerge}
