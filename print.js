@@ -25,6 +25,7 @@ const printDate = date => {
 }
 
 const footer = R.curry(function (extra, page, pages) {
+    if (('' + extra.noFooter).toUpperCase() === 'TRUE') { return '' }
     return page === 1 ? {
         text: T.getTranslation(extra.language, 'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης'),
         alignment: 'center'
@@ -36,6 +37,8 @@ const footer = R.curry(function (extra, page, pages) {
     }
 })
 const signature = function (extra) {
+    if (('' + extra.noLastPage).toUpperCase() === 'TRUE') { return '' }
+
     return [
         { text: `${T.getTranslation(extra.language, 'Ημερομηνία')} :`, style: 'signature' }
         , { text: `${T.getTranslation(extra.language, 'Υπογραφή')}`, style: 'signature' }
@@ -47,6 +50,7 @@ const signature = function (extra) {
     ]
 }
 const frontPage = function (extra) {
+    if (('' + extra.noFirstPage).toUpperCase() === 'TRUE') { return '' }
     const generalInfo = extra.callData.tab1
     var imageObject, headerObject
     if (oldFs.existsSync(`logos/${generalInfo.logo}`)) {
@@ -133,7 +137,10 @@ const createDoc = function (request) {
         cnCode: request.cnCode,
         dateFinished: request.dateFinished,
         callData: callData,
-        language: callData.tab1.uiLanguage
+        language: callData.tab1.uiLanguage,
+        noFooter: request.noFooter || false,
+        noFirstPage: request.noFirstPage || false,
+        noLastPage: request.noLastPage || false
     }
 
     const definition = print(tabArray, extra) //creates the doc definition compatible with pdfmake
