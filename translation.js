@@ -3,6 +3,7 @@ const R = require('ramda')
 const messages = {
     'Αγγλικά': {
         'ΝΑΙ': 'YES',
+        'NAI': 'YES',
         'ΌΧΙ': 'NO',
         'ΟΧΙ': 'NO',
         'ΣΥΓΚΕΝΤΡΩΤΙΚΟΣ ΠΙΝΑΚΑΣ ΔΑΠΑΝΩΝ': 'TOTALS EXPENSE TABLE',
