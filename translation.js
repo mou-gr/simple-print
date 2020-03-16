@@ -26,7 +26,8 @@ const messages = {
         'Φόρμα Υποβολής': 'Submission Form',
         'Αξιολόγηση': 'First level evaluation',
         'Γνωμοδοτική Επιτροπή':'Second Level Evaluation (Joint Assessment Team)',
-        'Αίτηση Ένστασης':'Complaint Application'
+        'Αίτηση Ένστασης':'Complaint Application',
+        'Αξιολόγησης Ένστασης': 'Evaluation of Complaint'
     }    
 }
 
