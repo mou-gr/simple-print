@@ -23,34 +23,53 @@ const onOffType = variableList('Comments1', 'tab8.onOff', 'aa', 'name')
 
 
 const ratio = function ratio(metadata, callData) {
-    var ratioList = callData.tab3
-    var ratioListSize = ratioList.length
+        var ratioList = callData.tab3;
+        var ratioListSize = ratioList.length;
+        var columnTypeInfo = [
+            { name: "Comments", length: 13 },
+            { name: "DecVal", length: 10 },
+            { name: "CpCode", length: 10 }
+        ];
 
-    if (ratioListSize == 0) {
-        return metadata
-    }
+ 
 
-    for (var i = ratioListSize; i < 13; i++) {
-        var nameOfIndex1 = 'Comments' + (i+1)
-        var index1 = metadata.columns.findIndex(function (el1) {
-            return el1.name == nameOfIndex1
-        })
-        var columnToHide = metadata.columns[index1]
-        columnToHide.view = ''
-        columnToHide.edit = ''
-    }
+        if (ratioListSize == 0) {
+            return metadata;
+        }
 
-    for (var r = 0; r < ratioListSize; r++) {
-        var nameOfIndex2 = 'Comments' + (r + 1)
-        var index2 = metadata.columns.findIndex(function (el2) {
-            return el2.name == nameOfIndex2
-        })
-        var columnToRename = metadata.columns[index2]
-        var columnWithName = callData.tab3[r]
-        columnToRename.label = columnWithName.ONOMASIA_DEIKTH.split('&&')[1]
+ 
+
+        for (var r = 0; r < ratioListSize; r++) {
+            var nameOfIndex2 = "Comments" + (r + 1);
+            var index2 = metadata.columns.findIndex(function (el2) {
+                return el2.name == nameOfIndex2;
+            });
+            var columnToRename = metadata.columns[index2];
+            var columnWithName = callData.tab3[r];
+            columnToRename.label = columnWithName.ONOMASIA_DEIKTH.split('&&')[1];
+        }
+
+ 
+
+        columnTypeInfo.map(function hideColumns(el) {
+            ratioListSize = (el.name === "CpCode") ? (ratioListSize + 1) : ratioListSize
+            for (var i = ratioListSize; i < el.length; i++) {
+                var nameOfIndex1 = el.name + (i + 1);
+                var index1 = metadata.columns.findIndex(function (el1) {
+                    return el1.name == nameOfIndex1;
+                });
+                var columnToHide = metadata.columns[index1];
+                columnToHide.view = 0;
+                columnToHide.edit = 0;
+            }
+            return metadata;
+        });
+
+ 
+
+        return metadata;
     }
-    return metadata
-}
+	
 var specialMerge = R.curry(function specialMerge(callData, metadata) {
     var transformationArray = {
         GenericCheckpoints_qCategory74_c204: [ratio]
