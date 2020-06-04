@@ -59,8 +59,8 @@ const ratio = function ratio(metadata, callData) {
                     return el1.name == nameOfIndex1;
                 });
                 var columnToHide = metadata.columns[index1];
-                columnToHide.view = 0;
-                columnToHide.edit = 0;
+                columnToHide.view = '';
+                columnToHide.edit = '';
             }
             return metadata;
         });
