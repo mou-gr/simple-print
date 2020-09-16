@@ -27,7 +27,21 @@ const messages = {
         'Αξιολόγηση': 'First level evaluation',
         'Γνωμοδοτική Επιτροπή':'Second Level Evaluation (Joint Assessment Team)',
         'Αίτηση Ένστασης':'Complaint Application',
-        'Αξιολόγησης Ένστασης': 'Evaluation of Complaint'
+        'Αξιολόγησης Ένστασης': 'Evaluation of Complaint',
+        'Αίτημα Προκαταβολής': 'Advance Payment Claim',
+        'Αξιολόγηση Προκαταβολής': 'Evaluation of the Advance Payment Claim',
+        'Εκταμίευση Προκαταβολής': 'Disbursement of the Advance Payment',
+        'Αίτημα Τροποποίησης': 'Request for Modification',
+        'Αξιολόγηση Αιτήματος Τροποποίησης': 'Evaluation Report of the Request for Modification',
+        'Γενικά Στοιχεία Δικαιούχου': 'Beneficiary General Information',
+        'Στοιχεία Εκπροσώπων': 'Legal Representative Information',
+        'Στοιχεία Εταίρων/Μετόχων': 'Beneficiary Enterprise Partner / Shareholder Information',
+        'Κ.Α.Δ. Δικαιούχου/Επένδυσης': 'Beneficiary/Investment NACE Code',
+        'Στοιχεία Επένδυσης': 'Investment Plan Identity',
+        'Τόπος Υλοποίησης': 'Location of Investment',
+        'Φυσικό Αντικείμενο': 'INVESTMENT PLAN IDENTITY',
+        'Πίνακας Δαπανών': 'Table of Expenditures',
+        'Χρηματοδοτικό Σχήμα': 'Financing Scheme'
     }    
 }
 
