@@ -11,7 +11,7 @@ const messages = {
         'Συνολικό Κόστος(€)': 'Total Budget(€)',
         'Μη Επιλέξιμο Κόστος(€)': 'Non Eligible Budget(€)',
         'Επιλέξιμο Κόστος(€)': 'Eligible Budget(€)',
-        'Δημόσια Δαπάνη (€)': 'Public Expenditure(€)',
+        'Δημόσια Δαπάνη (€)': 'Public Expenditure (€)',
         'Συνολικά': 'Total',
         'Με τη συγχρηματοδότηση της Ελλάδας και της Ευρωπαϊκής Ένωσης': 'Co-funded by the European Union (ERDF) and National Funds',
         'Κωδικός πράξης': 'Code',
@@ -41,7 +41,14 @@ const messages = {
         'Τόπος Υλοποίησης': 'Location of Investment',
         'Φυσικό Αντικείμενο': 'INVESTMENT PLAN IDENTITY',
         'Πίνακας Δαπανών': 'Table of Expenditures',
-        'Χρηματοδοτικό Σχήμα': 'Financing Scheme'
+        'Χρηματοδοτικό Σχήμα': 'Financing Scheme',
+        'Αίτημα ελέγχου': 'Verification & Certification Request',
+        'Έλεγχος δαπανών βάσει Ισχύοντος Τεχνικού Παραρτήματος - Συγκεντρωτικά' : 'Check of expenditures according to the AF in force',
+        'Προϋπολογισμός Βάσει Ένταξης': 'Approved Budget',
+        'Προϋπολογισμός Βάσει Παραστατικών': 'Budget according to the invoices',
+        'Συνολικό (€)': 'Total amount (€)',
+        'Επιλέξιμο (€)': 'Eligible amount (€)',
+        'Ποσοστό Δημόσιας Δαπάνης (%)': 'Percentage of Public Expenditure (%)'
     }    
 }
 

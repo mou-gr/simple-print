@@ -273,10 +273,10 @@ const budgetOverview = function (dataSet, extra) {
             table: {
                 widths: ['*', 50, 50, 50, 50, 50, 50, 50, 50],
                 body: [
-                    [' ', { text: 'Προϋπολογισμός Βάσει Ένταξης', style: 'headerRow', colSpan: 4 }, {}, {}, {}, { text: 'Προϋπολογισμός Βάσει Παραστατικών', style: 'headerRow', colSpan: 4 }, {}, {}, {}],
-                    ['Κατηγορία Δαπάνης', 'Συνολικό (€)', 'Επιλέξιμο (€)', 'Ποσοστό Δημόσιας Δαπάνης (%)', 'Δημόσια Δαπάνη (€)', 'Συνολικό (€)', 'Επιλέξιμο (€)', 'Ποσοστό Δημόσιας Δαπάνης (%)', 'Δημόσια Δαπάνη (€)'].map(withStyle('headerRow')),
+                    [' ', { text: `{{rank}}. ${T.getTranslation(extra.language, 'Προϋπολογισμός Βάσει Ένταξης')}`, style: 'headerRow', colSpan: 4 }, {}, {}, {}, { text: `{{rank}}. ${T.getTranslation(extra.language, 'Προϋπολογισμός Βάσει Παραστατικών')}`, style: 'headerRow', colSpan: 4 }, {}, {}, {}],
+                    [`{{rank}}. ${T.getTranslation(extra.language, 'Κατηγορία Δαπάνης')}`,`{{rank}}. ${T.getTranslation(extra.language, 'Συνολικό (€)')}`, `{{rank}}. ${T.getTranslation(extra.language, 'Επιλέξιμο (€)')}`, `{{rank}}. ${T.getTranslation(extra.language, 'Ποσοστό Δημόσιας Δαπάνης (%)')}`, `{{rank}}. ${T.getTranslation(extra.language, 'Δημόσια Δαπάνη (€)')}`, `{{rank}}. ${T.getTranslation(extra.language, 'Συνολικό (€)')}`, `{{rank}}. ${T.getTranslation(extra.language, 'Επιλέξιμο (€)')}`,`{{rank}}. ${T.getTranslation(extra.language, 'Ποσοστό Δημόσιας Δαπάνης (%)')}`, `{{rank}}. ${T.getTranslation(extra.language, 'Δημόσια Δαπάνη (€)')}`].map(withStyle('headerRow')),
                     ...budgetAnalysis,
-                    ['Συνολικά', ...total].map(withStyle('sumRow'))
+                    [`{{rank}}. ${T.getTranslation(extra.language, 'Συνολικά')}`, ...total].map(withStyle('sumRow'))
                 ]
             }
         },
