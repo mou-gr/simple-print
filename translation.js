@@ -48,7 +48,8 @@ const messages = {
         'Προϋπολογισμός Βάσει Παραστατικών': 'Budget according to the invoices',
         'Συνολικό (€)': 'Total amount (€)',
         'Επιλέξιμο (€)': 'Eligible amount (€)',
-        'Ποσοστό Δημόσιας Δαπάνης (%)': 'Percentage of Public Expenditure (%)'
+        'Ποσοστό Δημόσιας Δαπάνης (%)': 'Percentage of Public Expenditure (%)',
+        'Έκθεση Επαλήθευσης (Ελέγχου)': 'Verification Report'
     }    
 }
 
