@@ -49,7 +49,9 @@ const messages = {
         'Συνολικό (€)': 'Total amount (€)',
         'Επιλέξιμο (€)': 'Eligible amount (€)',
         'Ποσοστό Δημόσιας Δαπάνης (%)': 'Percentage of Public Expenditure (%)',
-        'Έκθεση Επαλήθευσης (Ελέγχου)': 'Verification Report'
+        'Έκθεση Επαλήθευσης (Ελέγχου)': 'Verification Report',
+        'Έκθεση πιστοποίησης': 'Validated Verification Report',
+		'Καταβολή Ενίσχυσης (Εκταμίευση)': 'Payment Amount (Disbursement)'
     }    
 }
 
