@@ -114,6 +114,8 @@ const print = function print(tabArray, extra) {
     const cover = frontPage(extra)
     const last = signature(extra)
 
+	if (extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)') {content.shift()}
+
     return {
         styles: styles,
         defaultStyle: styles.default,
@@ -131,6 +133,7 @@ const createDoc = function (request) {
     )
     
     const tabArray = request.tabArray
+	
     var extra = {
         docType: request.type,
         lookUps: request.jsonLookUp,
