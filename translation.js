@@ -22,6 +22,7 @@ const messages = {
         'Υπογραφή': 'Signature',
         'Σφραγίδα': 'Stamp',
         'Δικαιούχος': 'Beneficiary',
+		'Δικαιούχοι': 'Beneficiaries',
         'Μη Οριστικοποιημένη': 'Not Finalised',
         'Φόρμα Υποβολής': 'Submission Form',
         'Αξιολόγηση': 'First level evaluation',

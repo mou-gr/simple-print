@@ -77,7 +77,7 @@ const frontPage = function (extra) {
         , { text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover' }
         , { text: `${T.getTranslation(extra.language, extra.docType)}`, style: 'coverBold' }
         , { text: `${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, style: 'cover' }
-        , contractor.length > 0 ? { text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover' } : ''
+        , contractor.length == 1 ? { text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover' } : { text: `${T.getTranslation(extra.language, 'Δικαιούχοι')}: ${contractor.join(', ')}`, style: 'cover' }
         , imageObject
     ]
 }
