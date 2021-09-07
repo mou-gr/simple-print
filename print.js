@@ -68,6 +68,18 @@ const frontPage = function (extra) {
 
     const contractor = extra.contractors || []
 
+    const docTypeWithoutMIS = [
+        'Φόρμα Υποβολής'
+        ,'Έλεγχος Πληρότητας'
+        ,'Αξιολόγηση'
+        ,'Γνωμοδοτική Επιτροπή'
+        ,'Γνωμοδοτική Επιτροπή Αξιολόγησης'
+        ,'Αίτηση Ένστασης'
+        ,'Αξιολόγηση Ένστασης'
+        ,'Επιτροπή Ενστάσεων'
+        ,'Απογραφικό Δελτίο'
+    ]
+
     return [
         // {text: `${activity.docType}`, style: 'coverHeader'}
         headerObject
@@ -78,6 +90,7 @@ const frontPage = function (extra) {
         , { text: `${T.getTranslation(extra.language, extra.docType)}`, style: 'coverBold' }
         , { text: `${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, style: 'cover' }
         , contractor.length == 1 ? { text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover' } : { text: `${T.getTranslation(extra.language, 'Δικαιούχοι')}: ${contractor.join(', ')}`, style: 'cover' }
+        , (extra.misCode.length > 1 && !docTypeWithoutMIS.includes(extra.docType)) ? { text: `${T.getTranslation(extra.language, 'Κωδικός MIS')}:  ${extra.misCode}`, style: 'cover' } : ''
         , imageObject
     ]
 }
@@ -114,7 +127,7 @@ const print = function print(tabArray, extra) {
     const cover = frontPage(extra)
     const last = signature(extra)
 
-	if (extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)') {content.shift()}
+    if (extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)') {content.shift()}
 
     return {
         styles: styles,
@@ -133,9 +146,10 @@ const createDoc = function (request) {
     )
     
     const tabArray = request.tabArray
-	
+    
     var extra = {
         docType: request.type,
+        misCode: request.misCode,
         lookUps: request.jsonLookUp,
         cnCode: request.cnCode,
         dateFinished: request.dateFinished,

@@ -22,7 +22,7 @@ const messages = {
         'Υπογραφή': 'Signature',
         'Σφραγίδα': 'Stamp',
         'Δικαιούχος': 'Beneficiary',
-		'Δικαιούχοι': 'Beneficiaries',
+        'Δικαιούχοι': 'Beneficiaries',
         'Μη Οριστικοποιημένη': 'Not Finalised',
         'Φόρμα Υποβολής': 'Submission Form',
         'Αξιολόγηση': 'First level evaluation',
@@ -52,7 +52,8 @@ const messages = {
         'Ποσοστό Δημόσιας Δαπάνης (%)': 'Percentage of Public Expenditure (%)',
         'Έκθεση Επαλήθευσης (Ελέγχου)': 'Verification Report',
 		'Έκθεση πιστοποίησης': 'Validation of Verification Report',
-        'Καταβολή Ενίσχυσης (Εκταμίευση)': 'Payment Amount (Disbursement)'
+        'Καταβολή Ενίσχυσης (Εκταμίευση)': 'Payment Amount (Disbursement)',
+        'Κωδικός MIS': 'MIS Code'
     }    
 }
 
