@@ -67,6 +67,14 @@ const frontPage = function (extra) {
     }
 
     const contractor = extra.contractors || []
+	
+	var contractorAtCover = ''
+
+    if (contractor.length == 1) 
+        contractorAtCover = { text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover' }
+
+    if (contractor.length > 1)
+        contractorAtCover = { text: `${T.getTranslation(extra.language, 'Δικαιούχοι')}: ${contractor.join(', ')}`, style: 'cover' } 
 
     const docTypeWithoutMIS = [
         'Φόρμα Υποβολής'
@@ -88,7 +96,7 @@ const frontPage = function (extra) {
         ,extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)' ? '' : { text: `${T.getTranslation(extra.language, generalInfo.title3 || '')}`, style: 'cover' }
         , { text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover' }
         , { text: `${T.getTranslation(extra.language, extra.docType)}`, style: 'coverBold' }
-        , { text: `${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, style: 'cover' }
+        , contractorAtCover
         , contractor.length == 1 ? { text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover' } : { text: `${T.getTranslation(extra.language, 'Δικαιούχοι')}: ${contractor.join(', ')}`, style: 'cover' }
         , (extra.misCode.length > 1 && !docTypeWithoutMIS.includes(extra.docType)) ? { text: `${T.getTranslation(extra.language, 'Κωδικός MIS')}:  ${extra.misCode}`, style: 'cover' } : ''
         , imageObject
