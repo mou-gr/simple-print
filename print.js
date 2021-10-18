@@ -67,14 +67,20 @@ const frontPage = function (extra) {
     }
 
     const contractor = extra.contractors || []
-	
-	var contractorAtCover = ''
+
+    var contractorAtCover = ''
 
     if (contractor.length == 1) 
-        contractorAtCover = { text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover' }
+        contractorAtCover = { text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ').replace("&amp;", "&")}`, style: 'cover' }
 
     if (contractor.length > 1)
-        contractorAtCover = { text: `${T.getTranslation(extra.language, 'Δικαιούχοι')}: ${contractor.join(', ')}`, style: 'cover' } 
+        contractorAtCover = { text: `${T.getTranslation(extra.language, 'Δικαιούχοι')}: ${contractor.join(', ').replace("&amp;", "&")}`, style: 'cover' }  
+        
+    const finalDocTypes = [
+        'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)' 
+        ,'Βεβαίωση Μη Ολοκλήρωσης Πράξης (Έργου)'
+    ]   
+        
 
     const docTypeWithoutMIS = [
         'Φόρμα Υποβολής'
@@ -91,13 +97,15 @@ const frontPage = function (extra) {
     return [
         // {text: `${activity.docType}`, style: 'coverHeader'}
         headerObject
-        ,extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)' ? '' : { text: `${T.getTranslation(extra.language, generalInfo.title1 || '')}`, style: 'cover' }
-        ,extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)' ? '' : { text: `${T.getTranslation(extra.language, generalInfo.title2 || '')}`, style: 'cover' }
-        ,extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)' ? '' : { text: `${T.getTranslation(extra.language, generalInfo.title3 || '')}`, style: 'cover' }
+        //,finalDocTypes.includes(extra.docType) ? { text: `${T.getTranslation(extra.language, 'Ημερομηνία')}:  ${extra.protocolDate}`, alignment: 'right' } : ''
+        //,finalDocTypes.includes(extra.docType) ? " " : ''
+        ,finalDocTypes.includes(extra.docType) ? '' : { text: `${T.getTranslation(extra.language, generalInfo.title1 || '')}`, style: 'cover' }
+        ,finalDocTypes.includes(extra.docType) ? '' : { text: `${T.getTranslation(extra.language, generalInfo.title2 || '')}`, style: 'cover' }
+        ,finalDocTypes.includes(extra.docType) ? '' : { text: `${T.getTranslation(extra.language, generalInfo.title3 || '')}`, style: 'cover' }
         , { text: `${generalInfo.TITLOS_PROSKLHSHS}`, style: 'cover' }
         , { text: `${T.getTranslation(extra.language, extra.docType)}`, style: 'coverBold' }
+        , { text: `${T.getTranslation(extra.language, 'Κωδικός πράξης')}: ${extra.cnCode}`, style: 'cover' }
         , contractorAtCover
-        , contractor.length == 1 ? { text: `${T.getTranslation(extra.language, 'Δικαιούχος')}: ${contractor.join(', ')}`, style: 'cover' } : { text: `${T.getTranslation(extra.language, 'Δικαιούχοι')}: ${contractor.join(', ')}`, style: 'cover' }
         , (extra.misCode.length > 1 && !docTypeWithoutMIS.includes(extra.docType)) ? { text: `${T.getTranslation(extra.language, 'Κωδικός MIS')}:  ${extra.misCode}`, style: 'cover' } : ''
         , imageObject
     ]
@@ -135,7 +143,7 @@ const print = function print(tabArray, extra) {
     const cover = frontPage(extra)
     const last = signature(extra)
 
-    if (extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)') {content.shift()}
+    if (extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)' || extra.docType == 'Βεβαίωση Μη Ολοκλήρωσης Πράξης (Έργου)' ) {content.shift()}
 
     return {
         styles: styles,
@@ -158,6 +166,7 @@ const createDoc = function (request) {
     var extra = {
         docType: request.type,
         misCode: request.misCode,
+        //protocolDate: request.protocolDate,
         lookUps: request.jsonLookUp,
         cnCode: request.cnCode,
         dateFinished: request.dateFinished,
