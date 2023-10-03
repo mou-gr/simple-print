@@ -135,36 +135,118 @@ const mergeWithPrev = function (acc, value) {
 
 const renderLabel = label => withStyle('label', label && label != '' ? strip(label) : ' ')
 
+let purchaseVoucherArray = [];
+
+function resetPurchaseVoucherArray() {
+    purchaseVoucherArray = [];
+}
 /** create special definition for cells of type jsonGrid */
 const jsonGrid = function jsonGrid(row, column) {
     const grid = row[column.name]
+
+    /** Fill purchaseVoucherArray while going over PurchaseVoucher rows. */
+    if (column.name === 'PurchaseVoucherDetails_Grid') {
+        
+        const rowWithoutPurchaseVoucherGrid = { ...row };
+        delete rowWithoutPurchaseVoucherGrid.PurchaseVoucherDetails_Grid;
+
+        purchaseVoucherArray.push(rowWithoutPurchaseVoucherGrid);
+    }
+    /** Transform data to create a result identical to the original parsedGrid */
+    if (column.name === 'PaymentVoucherDetails_Grid') {
+        if (!row.PaymentVoucherDetails_Grid || row.PaymentVoucherDetails_Grid.length === 0) {
+            // Create an empty table with headers only in the event that the user clicks + without filling form.
+            var tableBody = [];
     
-    const data = JSON.parse(grid)
-    const readTrasformation = new Function('row', column.readTransformation.join(''))
+            return [
+                renderHeader({ header: [{ lab: column.label }] }),
+                [{
+                    table: {
+                        body: [
+                            column.columnHeaders.map(h => h.replace(/<br>/g, ' ')),
+                            ...tableBody
+                        ]
+                    },
+                    colSpan: 2
+                }]
+            ];
+        }else{
+            const cellData = JSON.parse(grid);
+            const transformedData = [];
+        
+            cellData.forEach((cellDataRow) => {
+                purchaseVoucherArray.forEach((purchaseVoucher) => {
+                    if (cellDataRow.PAVD_PurchaseVoucherID.toString() === purchaseVoucher.PurchaseVoucherID) {
 
-    const dataGrid = data.map(readTrasformation)
-    const parsedGrid = dataGrid.map(row => {
-        var deleteRow = false
-        const retValue = R.zipWith((def, col) => {
-            if (def.type != 'checkbox') { return col }
-            deleteRow = col != 1
-            return col == 1 ? 'Ναι' : 'Όχι'
-        }, column.columnTypes, row)
-        return deleteRow ? undefined : retValue
-    }).filter(r => r !== undefined)
+                        const dateParts = purchaseVoucher.PV_IssueDate.split(' ');
+                        const dateComponents = dateParts[0].split('/');
+                        const formattedDate = `${dateComponents[0].padStart(2, '0')}/${dateComponents[1].padStart(2, '0')}/${dateComponents[2]}`;
 
-    return [
-        renderHeader({ header: [{ lab: column.label }] }),
-        [{
-            table: {
-                body: [
-                    column.columnHeaders.map(h => h.replace(/<br>/g, ' ')),
-                    ...parsedGrid
-                ]
-            },
-            colSpan: 2
-        }]
-    ]
+                        const formattedPAVDValue = Number(cellDataRow.PAVD_Value).toFixed(2);    
+                        const vatValueWithDot = purchaseVoucher.PV_VAT_Value.replace(',', '.');
+                        const formattedVATValue = parseFloat(vatValueWithDot).toFixed(2).replace('.', ',');
+                        const formattedPAVDValueWithDecimals = formattedPAVDValue.includes('.') ? formattedPAVDValue.replace('.', ',') : `${formattedPAVDValue},00`;
+                        
+                        /** desired output table format | default ΄Ναι΄ because if you find it in the new grid, its because it is in USE, otherwise it doesnt exist */
+                        transformedData.push([
+                            purchaseVoucher.PVT_Description,
+                            purchaseVoucher.PV_VoucherNumber,
+                            formattedDate,
+                            purchaseVoucher.PV_Supplier,
+                            formattedVATValue,
+                            'Ναι',
+                            formattedPAVDValueWithDecimals,
+                        ]);
+                    }
+                });
+            });
+        
+            const tableBody = [
+                column.columnHeaders.map((h) => h.replace(/<br>/g, ' ')),
+                ...transformedData,
+            ];
+            
+            return [
+                renderHeader({ header: [{ lab: column.label }] }),
+                [
+                    {
+                        table: {
+                            body: tableBody,
+                        },
+                        colSpan: 2,
+                    },
+                ],
+            ];
+        }
+
+    }else{
+        const data = JSON.parse(grid)
+        const readTrasformation = new Function('row', column.readTransformation.join(''))
+
+        const dataGrid = data.map(readTrasformation)
+        const parsedGrid = dataGrid.map(row => {
+            var deleteRow = false
+            const retValue = R.zipWith((def, col) => {
+                if (def.type != 'checkbox') { return col }
+                deleteRow = col != 1
+                return col == 1 ? 'Ναι' : 'Όχι'
+            }, column.columnTypes, row)
+            return deleteRow ? undefined : retValue
+        }).filter(r => r !== undefined)
+
+        return [
+            renderHeader({ header: [{ lab: column.label }] }),
+            [{
+                table: {
+                    body: [
+                        column.columnHeaders.map(h => h.replace(/<br>/g, ' ')),
+                        ...parsedGrid
+                    ]
+                },
+                colSpan: 2
+            }]
+        ]
+    }
 }
 
 /**create definition for a column of the dataSet
@@ -306,12 +388,13 @@ const afterRender = {
     ModificationContractor_qMulti_c204_p2351: registerContractor
 }
 
+//var lastPurchaseVoucher = false;
 /**Create pdfmake definition for specified tab */
 const renderSection = function renderSection(metaData, data, extra) {
     if (metaData.columns.length <= 0) { return '' }
     if (metaData['no-print'] == '1') { return '' }
     if (metaData['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return '' }
-
+    
     // Array of tabs (specified by customise) that will not have the normal definition 
     // but only the "appended one"
     const appendOnly = ['ExpenseCategoriesBudget_qSingle_c204'].includes(metaData.customise)
@@ -326,6 +409,8 @@ const renderSection = function renderSection(metaData, data, extra) {
     const body = data.length == 0 ? ['-----------------'] //empty dataSet
         : R.map(renderRow(extra, metaData.columns), data)
 
+    
+    
     return [title, ...body, append]
 }
 
@@ -362,4 +447,4 @@ const renderDataSet = function renderDataSet(metadata, data, extra, type) {
     return printers[type](metadata, data, extra)
 }
 
-module.exports = { renderDataSet }
+module.exports = { renderDataSet, resetPurchaseVoucherArray };
