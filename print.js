@@ -35,29 +35,9 @@ const footer = R.curry(function (extra, page, pages) {
             { text: `${T.getTranslation(extra.language, 'σελ.')} ${page} ${T.getTranslation(extra.language, 'από')} ${pages}`, alignment: 'right' }],
         margin: [40, 10, 40, 0]
     }
-    
 })
 const signature = function (extra) {
     if (('' + extra.noLastPage).toUpperCase() === 'TRUE') { return '' }
-
-    if (extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)') {
-        const generalInfo = extra.callData.tab1
-
-        var signatureObject
-
-        if (oldFs.existsSync(`logos/${generalInfo.logo}`)) {
-            signatureObject = { image: `logos/${generalInfo.logo}`, fit: [550, 80], alignment: 'center', style: 'logo' }
-        } else {
-            signatureObject = { text: '', style: 'logo' }
-        }
-
-        return [
-            { text: `${T.getTranslation(extra.language, 'Υπογραφή')}`, style: 'signature' }
-            , ' '
-            , ' '
-            , signatureObject
-        ]
-    }
 
     return [
         { text: `${T.getTranslation(extra.language, 'Ημερομηνία')} :`, style: 'signature' }
@@ -149,7 +129,8 @@ const printTab = function printTab(extra, tab) {
  * @param {Object} extra - Additional information for printing (jsonLookups, invitationData, ...)
  */
 const print = function print(tabArray, extra) {
-    printers.resetPurchaseVoucherArray();
+	
+	printers.resetPurchaseVoucherArray();
     var counter = 0 //counter to be used for generating tabs order
     const content = R.pipe(
         R.map(a => printTab(extra, a)), // generate definition for each tab
@@ -162,9 +143,9 @@ const print = function print(tabArray, extra) {
     )(tabArray)
     const cover = frontPage(extra)
     const last = signature(extra)
-    
+
     if (extra.docType == 'Βεβαίωση Ολοκλήρωσης Πράξης (Έργου)' || extra.docType == 'Βεβαίωση Μη Ολοκλήρωσης Πράξης (Έργου)' ) {content.shift()}
-    
+
     return {
         styles: styles,
         defaultStyle: styles.default,
