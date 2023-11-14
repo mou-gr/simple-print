@@ -136,9 +136,11 @@ const mergeWithPrev = function (acc, value) {
 const renderLabel = label => withStyle('label', label && label != '' ? strip(label) : ' ')
 
 let purchaseVoucherArray = [];
+let contractItemDetailsArray = [];
 
 function resetPurchaseVoucherArray() {
     purchaseVoucherArray = [];
+    contractItemDetailsArray = [];
 }
 /** create special definition for cells of type jsonGrid */
 const jsonGrid = function jsonGrid(row, column) {
@@ -146,11 +148,74 @@ const jsonGrid = function jsonGrid(row, column) {
 
     /** Fill purchaseVoucherArray while going over PurchaseVoucher rows. */
     if (column.name === 'PurchaseVoucherDetails_Grid') {
-        
         const rowWithoutPurchaseVoucherGrid = { ...row };
         delete rowWithoutPurchaseVoucherGrid.PurchaseVoucherDetails_Grid;
-
         purchaseVoucherArray.push(rowWithoutPurchaseVoucherGrid);
+
+
+
+        /** Work on actually printing out PurchaseVouchers */
+        if (!row.PurchaseVoucherDetails_Grid || row.PurchaseVoucherDetails_Grid.length === 0) {
+            // Create an empty table with headers only in the event that the user clicks + without filling form.
+            var tableBody = [];
+    
+            return [
+                renderHeader({ header: [{ lab: column.label }] }),
+                [{
+                    table: {
+                        body: [
+                            column.columnHeaders.map(h => h.replace(/<br>/g, ' ')),
+                            ...tableBody
+                        ]
+                    },
+                    colSpan: 2
+                }]
+            ];
+        }else{
+            const cellData = JSON.parse(grid);
+            const transformedData = [];
+        
+            cellData.forEach((cellDataRow) => {
+                contractItemDetailsArray.forEach((contractItemDetail) => {
+                    if (cellDataRow.PVD_ContractItemID.toString() === contractItemDetail.CID_ContractItemID) {
+
+                        const formattedPVDValue = Number(cellDataRow.PVD_Value);   
+                        const formattedPVDQuantity = Number(cellDataRow.PVD_Quantity);
+                        const formattedTotal = (Number(contractItemDetail.CID_Value.replace(',', '.')) * Number(contractItemDetail.CID_Quantity.replace(',', '.'))).toFixed(2);
+
+                        /** desired output table format | default ΄Ναι΄ because if you find it in the new grid, its because it is in USE, otherwise it doesnt exist */
+                        transformedData.push([
+                            contractItemDetail.CID_Description,
+                            Number(contractItemDetail.CID_Quantity.replace(',', '.')).toFixed(2).replace('.', ','),
+                            contractItemDetail.UT_Title,
+                            Number(contractItemDetail.CID_Value.replace(',', '.')).toFixed(2).replace('.', ','),
+                            formattedTotal.toString().replace('.', ','),
+                            'Ναι',
+                            formattedPVDQuantity.toFixed(2).toString().replace('.', ','),
+                            formattedPVDValue.toFixed(2).toString().replace('.', ','),
+                            (formattedPVDQuantity * formattedPVDValue).toFixed(2).toString().replace('.', ',')
+                        ]);
+                    }
+                });
+            });
+        
+            const tableBody = [
+                column.columnHeaders.map((h) => h.replace(/<br>/g, ' ')),
+                ...transformedData,
+            ];
+            
+            return [
+                renderHeader({ header: [{ lab: column.label }] }),
+                [
+                    {
+                        table: {
+                            body: tableBody,
+                        },
+                        colSpan: 2,
+                    },
+                ],
+            ];
+        }
     }
     /** Transform data to create a result identical to the original parsedGrid */
     if (column.name === 'PaymentVoucherDetails_Grid') {
@@ -257,6 +322,10 @@ const renderCell = R.curry(function renderCell(extra, row, column) {
     if (column['no-print'] == '1') { return [] }
     if (column['no-print-tp'] == '1' && extra.docType == 'Τεχνικό Παράρτημα') { return [] }
     if (column.etype == 'jsonGrid') { return jsonGrid(row, column) }
+    if (column.name === 'CID_Description') {
+        const contractItemDetailsRow = { ...row };
+        contractItemDetailsArray.push(contractItemDetailsRow);
+    }
     const value = getData(extra, row, column)
     var cell = []
     column.header && column.header != '' && cell.push(renderHeader(column))
